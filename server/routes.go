@@ -5,10 +5,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dhurimkelmendi/vending_machine/api"
+	"github.com/dhurimkelmendi/vending_machine/auth"
 	"github.com/dhurimkelmendi/vending_machine/config"
+	"github.com/dhurimkelmendi/vending_machine/controllers"
 	"github.com/dhurimkelmendi/vending_machine/internal/trace"
+	"github.com/dhurimkelmendi/vending_machine/models"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 )
@@ -91,10 +96,34 @@ func Routes() http.Handler {
 	r.Use(getCORSHandler())
 	r.Use(logRequest)
 
-	// ctrl := controllers.GetControllersDefaultInstance()
-	// Public routes
-	r.Route("/api/v1", func(r chi.Router) {
+	ctrl := controllers.GetControllersDefaultInstance()
+	stateless := auth.GetStatelessAuthenticationProviderDefaultInstance()
 
+	// Public routes
+	r.Route("/public/api/v1", func(r chi.Router) {
+		r.Post("/users", ctrl.Users.CreateUser)
+		r.Post("/users/login", ctrl.Users.LoginUser)
+	})
+
+	// Protected routes - Requires authentication
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(stateless.TokenAuth))
+		r.Use(stateless.Authenticator)
+		allUserRolesOptions := controllers.AuthorizationOptions{
+			AllowedUserRoles: []models.UserRole{models.UserRoleBuyer, models.UserRoleSeller},
+		}
+		// sellerOnlyOptions := controllers.AuthorizationOptions{
+		// 	AllowedUserRoles: []models.UserRole{models.UserRoleSeller},
+		// }
+		// buyerOnlyOptions := controllers.AuthorizationOptions{
+		// 	AllowedUserRoles: []models.UserRole{models.UserRoleBuyer},
+		// }
+
+		// users
+		r.Put("/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxUpdateUser, ctrl.Users.UpdateUser, allUserRolesOptions))
+		r.Delete("/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDeleteUser, ctrl.Users.DeleteUser, allUserRolesOptions))
+		r.Get("/users", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUsers, ctrl.Users.GetAllUsers, allUserRolesOptions))
+		r.Get("/users/{id}", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUser, ctrl.Users.GetUserByID, allUserRolesOptions))
 	})
 	return r
 }

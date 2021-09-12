@@ -11,6 +11,17 @@ const (
 	CtxAuthentication ErrorContext = "ctxAuthentication"
 )
 
+// User error contexts
+const (
+	CtxGetUsers       ErrorContext = "ctxGetUsers"
+	CtxGetUserAvatars ErrorContext = "ctxGetUserAvatars"
+	CtxGetUser        ErrorContext = "ctxGetUser"
+	CtxLoginUser      ErrorContext = "ctxLoginUser"
+	CtxCreateUser     ErrorContext = "ctxCreateUser"
+	CtxUpdateUser     ErrorContext = "ctxUpdateUser"
+	CtxDeleteUser     ErrorContext = "ctxDeleteUser"
+)
+
 // Serializer error contexts
 const (
 	CtxSerializeUser ErrorContext = "ctxSerializeUser"

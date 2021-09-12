@@ -45,4 +45,13 @@ var (
 	ErrInvalidAuth    = NewResponseError("errInvalidAuth", "invalid authorization", http.StatusUnauthorized)
 	ErrUserForbidden  = NewResponseError("errUserForbidden", "user is not permitted", http.StatusForbidden)
 	ErrCreateUserAuth = NewResponseError("errCreateUserAuth", "unable to authorize user")
+
+	// User errors
+	ErrUserNotFound = NewResponseError("errUserNotFound", "unable to find user", http.StatusNotFound)
+	ErrGetUsers     = NewResponseError("errFindUser", "unable to get users")
+	ErrGetUser      = NewResponseError("errFindUser", "unable to get user")
+	ErrLoginUser    = NewResponseError("errLoginUser", "unable to login user")
+	ErrCreateUser   = NewResponseError("errCreateUser", "unable to register user")
+	ErrUpdateUser   = NewResponseError("errUpdateUser", "unable to update user")
+	ErrDeleteUser   = NewResponseError("errDeleteUser", "unable to delete user")
 )

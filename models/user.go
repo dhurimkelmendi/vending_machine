@@ -21,28 +21,45 @@ type User struct {
 	ID        uuid.UUID `pg:"id,pk,type:uuid"`
 	Username  string    `json:"username"`
 	Password  string    `json:"password"`
+	Token     string    `json:"token"`
 	Role      UserRole  `json:"role"`
 	Deposit   int32     `json:"deposit"`
 }
 
+// Merge merges two instances of type User into one
+func (u *User) Merge(secondUser User) {
+	if u.Username == "" {
+		u.Username = secondUser.Username
+	}
+	if u.Password == "" {
+		u.Password = secondUser.Password
+	}
+	if u.Role == "" {
+		u.Role = secondUser.Role
+	}
+	if u.Deposit == 0 {
+		u.Deposit = secondUser.Deposit
+	}
+}
+
 // Equals compares two instances of type User
-func (p *User) Equals(secondUser *User) bool {
-	if p.ID != secondUser.ID {
+func (u *User) Equals(secondUser *User) bool {
+	if u.ID != secondUser.ID {
 		return false
 	}
-	if p.Username != secondUser.Username {
+	if u.Username != secondUser.Username {
 		return false
 	}
-	if p.Role != secondUser.Role {
+	if u.Role != secondUser.Role {
 		return false
 	}
-	if p.Deposit != secondUser.Deposit {
+	if u.Deposit != secondUser.Deposit {
 		return false
 	}
 	return true
 }
 
 // Render is used by go-chi/renderer
-func (p *User) Render(w http.ResponseWriter, r *http.Request) error {
+func (u *User) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }

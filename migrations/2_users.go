@@ -13,9 +13,10 @@ func init() {
 
 		CREATE TABLE users (
 			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-			username varchar(30) UNIQUE NOT NULL,
-			password varchar(30) NOT NULL,
-			role varchar(30) NOT NULL,
+			username varchar(100) UNIQUE NOT NULL,
+			password varchar(100) NOT NULL,
+			role varchar(100) NOT NULL,
+			token text,
 			deposit int
 		);`)
 		return err
