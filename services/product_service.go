@@ -99,9 +99,15 @@ func (s *ProductService) createProduct(dbSession *pg.Tx, registerProduct *payloa
 }
 
 // UpdateProduct updates the product by id using the provided payload
-func (s *ProductService) UpdateProduct(ctx context.Context, updateProduct *payloads.UpdateProductPayload) (*models.Product, error) {
+func (s *ProductService) UpdateProduct(ctx context.Context, updateProduct *payloads.UpdateProductPayload, userContext auth.UserContext) (*models.Product, error) {
 	var updatedProduct *models.Product
-	var err error
+	existingProduct, err := s.GetProductByID(updateProduct.ID)
+	if err != nil {
+		return updatedProduct, db.ErrNoMatch
+	}
+	if userContext.ID != existingProduct.SellerID {
+		return updatedProduct, db.ErrUserForbidden
+	}
 	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
 		updatedProduct, err = s.updateProduct(tx, updateProduct)
 		return err
