@@ -20,7 +20,8 @@ import (
 // A UsersController handles HTTP requests that deal with user.
 type UsersController struct {
 	AuthenticatedController
-	userService *services.UserService
+	userService        *services.UserService
+	userProductService *services.UserProductService
 }
 
 var usersControllerDefaultInstance *UsersController
@@ -28,14 +29,14 @@ var usersControllerDefaultInstance *UsersController
 // GetUsersControllerDefaultInstance returns the default instance of UserController.
 func GetUsersControllerDefaultInstance() *UsersController {
 	if usersControllerDefaultInstance == nil {
-		usersControllerDefaultInstance = NewUserController(services.GetUserServiceDefaultInstance())
+		usersControllerDefaultInstance = NewUserController(services.GetUserServiceDefaultInstance(), services.GetUserProductServiceDefaultInstance())
 	}
 
 	return usersControllerDefaultInstance
 }
 
 // NewUserController create a new instance of a user controller using the supplied user service
-func NewUserController(userService *services.UserService) *UsersController {
+func NewUserController(userService *services.UserService, userProductService *services.UserProductService) *UsersController {
 	controller := Controller{
 		errCmp:    api.NewErrorComponent(api.CmpController),
 		responder: api.GetResponderDefaultInstance(),
@@ -48,6 +49,7 @@ func NewUserController(userService *services.UserService) *UsersController {
 	return &UsersController{
 		AuthenticatedController: authenticatedController,
 		userService:             userService,
+		userProductService:      userProductService,
 	}
 }
 
@@ -240,4 +242,35 @@ func (c *UsersController) DeleteUser(w http.ResponseWriter, r *http.Request, use
 		return
 	}
 	c.responder.NoContent(w)
+}
+
+// BuyProduct links a given user to the provided product using the request payload
+func (c *UsersController) BuyProduct(w http.ResponseWriter, r *http.Request, userContext auth.UserContext) {
+	errCtx := c.errCmp(api.CtxCreateUser, r.Header.Get("X-Request-Id"))
+	urlID := chi.URLParam(r, "id")
+	userID, err := uuid.FromString(urlID)
+	if err != nil {
+		c.responder.Error(w, errCtx(api.ErrInvalidRequestParameter, fmt.Errorf("invalid userID, %v", err)), http.StatusBadRequest)
+		return
+	}
+
+	userProduct := &payloads.UserProductPurchase{}
+	userProduct.UserID = userID
+
+	if err := json.NewDecoder(r.Body).Decode(userProduct); err != nil {
+		c.responder.Error(w, errCtx(api.ErrInvalidRequestPayload, fmt.Errorf("cannot decode user_product payload: %v", err)), http.StatusBadRequest)
+		return
+	}
+
+	if err := userProduct.Validate(); err != nil {
+		c.responder.Error(w, errCtx(api.ErrInvalidRequestPayload, errors.New("request body not valid, missing required fields")), http.StatusBadRequest)
+		return
+	}
+
+	ctx := context.Background()
+	defer r.Body.Close()
+	if _, err := c.userProductService.CreateUserProduct(ctx, userProduct); err != nil {
+		c.responder.Error(w, errCtx(api.ErrCreateUser, err), http.StatusBadRequest)
+		return
+	}
 }

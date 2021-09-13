@@ -9,8 +9,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// UserProductPurchaseList is a struct that represents a list of purchased products by users
-type UserProductPurchaseList struct {
+// UserProductBuyList is a struct that represents a list of bought products by users
+type UserProductBuyList struct {
 	UserProductList []*UserProductPurchase `json:"users_products"`
 }
 
@@ -79,8 +79,8 @@ func CreateChangeRepresentation(change int32) *UserChange {
 	return userChange
 }
 
-// UserPurchasesReport is a struct that represents the products bought from a user
-type UserPurchasesReport struct {
+// UserBuysReport is a struct that represents the products bought from a user
+type UserBuysReport struct {
 	UserID      uuid.UUID         `json:"user_id"`
 	AmountSpent int32             `json:"amount_spent"`
 	Change      UserChange        `json:"change"`
@@ -94,7 +94,7 @@ type UserProductPurchase struct {
 	Amount    int32     `json:"amount"`
 }
 
-// Validate ensures that all the required fields are present in an instance of *UserProductPurchase
+// Validate ensures that all the required fields are present in an instance of *UserProductBuy
 func (p *UserProductPurchase) Validate() error {
 	if p == nil {
 		return fmt.Errorf("request body cannot be null")

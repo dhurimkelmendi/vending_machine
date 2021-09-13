@@ -6,7 +6,7 @@ import (
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/dhurimkelmendi/vending_machine/db"
-	"github.com/dhurimkelmendi/vending_machine/models"
+	"github.com/dhurimkelmendi/vending_machine/payloads"
 	"github.com/dhurimkelmendi/vending_machine/services"
 	"github.com/go-pg/pg/v10"
 	uuid "github.com/satori/go.uuid"
@@ -32,15 +32,15 @@ func GetUserProductFixtureDefaultInstance() *UserProductFixture {
 }
 
 // CreateUserProduct creates an userProduct with fake data
-func (f *UserProductFixture) CreateUserProduct(t *testing.T, productID uuid.UUID, userID uuid.UUID) *models.UsersProduct {
-	userProduct := &models.UsersProduct{}
+func (f *UserProductFixture) CreateUserProduct(t *testing.T, productID uuid.UUID, userID uuid.UUID) *payloads.UserProductPurchase {
+	userProduct := &payloads.UserProductPurchase{}
 	userProduct.ProductID = productID
 	userProduct.UserID = userID
 	userProduct.Amount = int32(gofakeit.Uint16())
 	ctx := context.Background()
-	createdUserProduct, err := f.userProductService.CreateUserProduct(ctx, userProduct)
+	_, err := f.userProductService.CreateUserProduct(ctx, userProduct)
 	if err != nil {
 		return nil
 	}
-	return createdUserProduct
+	return userProduct
 }

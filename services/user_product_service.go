@@ -31,12 +31,12 @@ func GetUserProductServiceDefaultInstance() *UserProductService {
 	return userProductServiceDefaultInstance
 }
 
-// GetUserPurchasesReport returns all userProducts related to a given user
-func (s *UserProductService) GetUserPurchasesReport(userID uuid.UUID) (*payloads.UserPurchasesReport, error) {
-	return s.getUserPurchasesReport(userID)
+// GetUserBuysReport returns all userProducts related to a given user, with the amount spent and change(if any)
+func (s *UserProductService) GetUserBuysReport(userID uuid.UUID) (*payloads.UserBuysReport, error) {
+	return s.getUserBuysReport(userID)
 }
-func (s *UserProductService) getUserPurchasesReport(userID uuid.UUID) (*payloads.UserPurchasesReport, error) {
-	userReport := &payloads.UserPurchasesReport{UserID: userID}
+func (s *UserProductService) getUserBuysReport(userID uuid.UUID) (*payloads.UserBuysReport, error) {
+	userReport := &payloads.UserBuysReport{UserID: userID}
 	user := &models.User{ID: userID}
 	if err := s.db.Model(user).
 		WherePK().
@@ -52,7 +52,7 @@ func (s *UserProductService) getUserPurchasesReport(userID uuid.UUID) (*payloads
 	productAmounts := make(map[string]int32, len(userReport.Products))
 	userProducts, err := s.getAllUserProductsForUser(userID)
 	if err != nil {
-		return &payloads.UserPurchasesReport{}, err
+		return &payloads.UserBuysReport{}, err
 	}
 
 	for _, userProduct := range userProducts {
@@ -79,22 +79,28 @@ func (s *UserProductService) getAllUserProductsForUser(UserID uuid.UUID) ([]mode
 }
 
 // CreateUserProduct creates a userProduct using the provided payload
-func (s *UserProductService) CreateUserProduct(ctx context.Context, createUserProduct *models.UsersProduct) (*models.UsersProduct, error) {
-	createdUserProduct := &models.UsersProduct{}
+func (s *UserProductService) CreateUserProduct(ctx context.Context, createUserProduct *payloads.UserProductPurchase) (*payloads.UserBuysReport, error) {
 	var err error
 	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
-		createdUserProduct, err = s.createUserProduct(tx, createUserProduct)
+		_, err = s.createUserProduct(tx, createUserProduct)
 		return err
 	})
-	return createdUserProduct, err
+	userReport := &payloads.UserBuysReport{UserID: createUserProduct.UserID}
+
+	return userReport, err
 }
-func (s *UserProductService) createUserProduct(dbSession *pg.Tx, createUserProduct *models.UsersProduct) (*models.UsersProduct, error) {
+func (s *UserProductService) createUserProduct(dbSession *pg.Tx, createUserProduct *payloads.UserProductPurchase) (*models.UsersProduct, error) {
+	createdUserProduct := &models.UsersProduct{
+		UserID:    createUserProduct.UserID,
+		ProductID: createUserProduct.ProductID,
+		Amount:    createUserProduct.Amount,
+	}
 	if err := createUserProduct.Validate(); err != nil {
-		return createUserProduct, err
+		return createdUserProduct, err
 	}
 	_, err := dbSession.Model(createUserProduct).Insert()
 	if err != nil {
-		return createUserProduct, err
+		return createdUserProduct, err
 	}
-	return createUserProduct, nil
+	return createdUserProduct, nil
 }

@@ -34,7 +34,7 @@ func GetProductsControllerDefaultInstance() *ProductsController {
 	return productsControllerDefaultInstance
 }
 
-// NewProductController create a new instance of a product controller using the supplied product service
+// NewProductController create a new instance of a product controller using the supplied services
 func NewProductController(productService *services.ProductService) *ProductsController {
 	controller := Controller{
 		errCmp:    api.NewErrorComponent(api.CmpController),

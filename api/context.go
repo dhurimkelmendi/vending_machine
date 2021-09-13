@@ -19,6 +19,7 @@ const (
 	CtxCreateUser   ErrorContext = "ctxCreateUser"
 	CtxUpdateUser   ErrorContext = "ctxUpdateUser"
 	CtxDepositMoney ErrorContext = "ctxDepositMoney"
+	CtxBuyProduct   ErrorContext = "ctxBuyProduct"
 	CtxResetDeposit ErrorContext = "ctxResetDeposit"
 	CtxDeleteUser   ErrorContext = "ctxDeleteUser"
 )

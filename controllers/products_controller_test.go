@@ -24,10 +24,14 @@ func TestProductController(t *testing.T) {
 
 	ctrl := controllers.GetControllersDefaultInstance()
 	seller := fixture.User.CreateSellerUser(t)
+	buyer := fixture.User.CreateBuyerUser(t)
 	secondSeller := fixture.User.CreateSellerUser(t)
 	product := fixture.Product.CreateProduct(t, seller.ID)
 	allUserOptions := controllers.AuthorizationOptions{
 		AllowedUserRoles: []models.UserRole{models.UserRoleSeller, models.UserRoleBuyer},
+	}
+	buyerOnlyOptions := controllers.AuthorizationOptions{
+		AllowedUserRoles: []models.UserRole{models.UserRoleBuyer},
 	}
 
 	t.Run("create product", func(t *testing.T) {
@@ -204,6 +208,41 @@ func TestProductController(t *testing.T) {
 					t.Fatalf("expected http status code of 404 but got: %+v, %+v", res.Code, res.Body.String())
 				}
 			})
+		})
+	})
+
+	t.Run("user buys product", func(t *testing.T) {
+		t.Run("as buyer", func(t *testing.T) {
+			r := chi.NewRouter()
+			URL := "/api/v1/buy"
+			r.Patch("/api/v1/buy", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxBuyProduct, ctrl.Users.BuyProduct, buyerOnlyOptions))
+			productToBuy := fixture.Product.CreateProduct(t, seller.ID)
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"user_id": "%s", "product_id": "%s", "amount":%d}`, buyer.ID.String(), productToBuy.ID.String(), gofakeit.Uint16())))
+			req := httptest.NewRequest(http.MethodPatch, URL, bBuf)
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyer.Token))
+
+			res := httptest.NewRecorder()
+			r.ServeHTTP(res, req)
+
+			if res.Code != http.StatusOK {
+				t.Fatalf("expected http status code of 200 but got: %+v, %+v", res.Code, res.Body.String())
+			}
+		})
+		t.Run("as seller", func(t *testing.T) {
+			r := chi.NewRouter()
+			URL := "/api/v1/buy"
+			r.Patch("/api/v1/buy", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxBuyProduct, ctrl.Users.BuyProduct, buyerOnlyOptions))
+			productToBuy := fixture.Product.CreateProduct(t, secondSeller.ID)
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"user_id": "%s", "product_id": "%s", "amount":%d}`, secondSeller.ID.String(), productToBuy.ID.String(), gofakeit.Uint16())))
+			req := httptest.NewRequest(http.MethodPatch, URL, bBuf)
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", secondSeller.Token))
+
+			res := httptest.NewRecorder()
+			r.ServeHTTP(res, req)
+
+			if res.Code != http.StatusForbidden {
+				t.Fatalf("expected http status code of 403 but got: %+v, %+v", res.Code, res.Body.String())
+			}
 		})
 	})
 }

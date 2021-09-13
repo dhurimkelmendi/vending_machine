@@ -126,6 +126,7 @@ func Routes() http.Handler {
 		r.Get("/users/{id}", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUser, ctrl.Users.GetUserByID, allUserRolesOptions))
 		r.Post("/deposit", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDepositMoney, ctrl.Users.DepositMoney, buyerOnlyOptions))
 		r.Post("/reset", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxResetDeposit, ctrl.Users.ResetDeposit, buyerOnlyOptions))
+		r.Post("/buy", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxBuyProduct, ctrl.Users.BuyProduct, buyerOnlyOptions))
 
 		// products
 		r.Get("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxGetProducts, ctrl.Products.GetAllProducts, allUserRolesOptions))

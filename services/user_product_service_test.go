@@ -6,7 +6,6 @@ import (
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/dhurimkelmendi/vending_machine/fixtures"
-	"github.com/dhurimkelmendi/vending_machine/models"
 	"github.com/dhurimkelmendi/vending_machine/payloads"
 	"github.com/dhurimkelmendi/vending_machine/services"
 )
@@ -23,21 +22,17 @@ func TestUserProductService(t *testing.T) {
 
 	t.Run("create userProduct", func(t *testing.T) {
 		t.Run("create userProduct with all fields", func(t *testing.T) {
-			userProductToCreate := &models.UsersProduct{}
+			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
 			userProductToCreate.UserID = seller.ID
 			userProductToCreate.Amount = int32(gofakeit.Uint16())
-			createdUserProduct, err := service.CreateUserProduct(ctx, userProductToCreate)
+			_, err := service.CreateUserProduct(ctx, userProductToCreate)
 			if err != nil {
 				t.Fatalf("error while creating userProduct %+v", err)
 			}
-			userProductToCreate.ID = createdUserProduct.ID
-			if !userProductToCreate.Equals(createdUserProduct) {
-				t.Fatalf("create userProduct failed: %+v \n received: %+v, %+v", userProductToCreate, createdUserProduct, err)
-			}
 		})
 		t.Run("create userProduct without product_id", func(t *testing.T) {
-			userProductToCreate := &models.UsersProduct{}
+			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.UserID = seller.ID
 			userProductToCreate.Amount = int32(gofakeit.Uint16())
 			_, err := service.CreateUserProduct(ctx, userProductToCreate)
@@ -46,7 +41,7 @@ func TestUserProductService(t *testing.T) {
 			}
 		})
 		t.Run("create userProduct without user_id", func(t *testing.T) {
-			userProductToCreate := &models.UsersProduct{}
+			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
 			userProductToCreate.Amount = int32(gofakeit.Uint16())
 			_, err := service.CreateUserProduct(ctx, userProductToCreate)
@@ -55,7 +50,7 @@ func TestUserProductService(t *testing.T) {
 			}
 		})
 		t.Run("create userProduct without amount", func(t *testing.T) {
-			userProductToCreate := &models.UsersProduct{}
+			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
 			userProductToCreate.UserID = seller.ID
 			_, err := service.CreateUserProduct(ctx, userProductToCreate)
@@ -66,7 +61,7 @@ func TestUserProductService(t *testing.T) {
 	})
 
 	t.Run("get user report", func(t *testing.T) {
-		userReport, err := service.GetUserPurchasesReport(buyer.ID)
+		userReport, err := service.GetUserBuysReport(buyer.ID)
 		if err != nil {
 			t.Fatalf("generate user report failed: %+v", err)
 		}
