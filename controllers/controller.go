@@ -15,6 +15,7 @@ import (
 type Controllers struct {
 	userService *services.UserService
 	Users       *UsersController
+	Products    *ProductsController
 }
 
 // Controller is a struct that contains references to error components and responders
@@ -42,6 +43,7 @@ func GetControllersDefaultInstance() *Controllers {
 		controllersDefaultInstance = &Controllers{
 			userService: services.GetUserServiceDefaultInstance(),
 			Users:       GetUsersControllerDefaultInstance(),
+			Products:    GetProductsControllerDefaultInstance(),
 		}
 	}
 	return controllersDefaultInstance

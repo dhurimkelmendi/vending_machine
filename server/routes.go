@@ -112,9 +112,9 @@ func Routes() http.Handler {
 		allUserRolesOptions := controllers.AuthorizationOptions{
 			AllowedUserRoles: []models.UserRole{models.UserRoleBuyer, models.UserRoleSeller},
 		}
-		// sellerOnlyOptions := controllers.AuthorizationOptions{
-		// 	AllowedUserRoles: []models.UserRole{models.UserRoleSeller},
-		// }
+		sellerOnlyOptions := controllers.AuthorizationOptions{
+			AllowedUserRoles: []models.UserRole{models.UserRoleSeller},
+		}
 		// buyerOnlyOptions := controllers.AuthorizationOptions{
 		// 	AllowedUserRoles: []models.UserRole{models.UserRoleBuyer},
 		// }
@@ -124,6 +124,13 @@ func Routes() http.Handler {
 		r.Delete("/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDeleteUser, ctrl.Users.DeleteUser, allUserRolesOptions))
 		r.Get("/users", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUsers, ctrl.Users.GetAllUsers, allUserRolesOptions))
 		r.Get("/users/{id}", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUser, ctrl.Users.GetUserByID, allUserRolesOptions))
+
+		// products
+		r.Get("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxGetProducts, ctrl.Products.GetAllProducts, allUserRolesOptions))
+		r.Get("/products/{id}", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxGetProduct, ctrl.Products.GetProductByID, allUserRolesOptions))
+		r.Post("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxCreateProduct, ctrl.Products.CreateProduct, sellerOnlyOptions))
+		r.Put("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxUpdateProduct, ctrl.Products.UpdateProduct, sellerOnlyOptions))
+		r.Delete("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxDeleteProduct, ctrl.Products.DeleteProduct, sellerOnlyOptions))
 	})
 	return r
 }
