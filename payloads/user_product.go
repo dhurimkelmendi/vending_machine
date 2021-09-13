@@ -87,6 +87,11 @@ type UserBuysReport struct {
 	Products    []*models.Product `json:"products"`
 }
 
+// Render is used by go-chi/renderer
+func (p *UserBuysReport) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
 // UserProductPurchase is a struct that represents the payload for linking a single product to a user
 type UserProductPurchase struct {
 	ProductID uuid.UUID `json:"product_id"`

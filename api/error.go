@@ -56,6 +56,7 @@ var (
 	ErrDepositMoney = NewResponseError("errDepositMoney", "unable to update user deposit")
 	ErrResetDeposit = NewResponseError("errResetDeposit", "unable to reset user deposit")
 	ErrDeleteUser   = NewResponseError("errDeleteUser", "unable to delete user")
+	ErrBuyProduct   = NewResponseError("errBuyProduct", "unable to buy product")
 
 	// Product errors
 	ErrProductNotFound = NewResponseError("errProductNotFound", "unable to find user", http.StatusNotFound)
