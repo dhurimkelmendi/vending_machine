@@ -19,7 +19,34 @@ func TestUserProductService(t *testing.T) {
 	product := fixture.Product.CreateProduct(t, seller.ID)
 	userProduct := fixture.UserProduct.CreateUserProduct(t, product.ID, buyer.ID)
 	ctx := context.Background()
-
+	t.Run("change representation", func(t *testing.T) {
+		t.Run("one of each coin", func(t *testing.T) {
+			expectedUserChange := &payloads.UserChange{
+				HundredCentCoins: 1,
+				FiftyCentCoins:   1,
+				TwentyCentCoins:  1,
+				TenCentCoins:     1,
+				FiveCentCoins:    1,
+			}
+			actualUserChange := service.CreateChangeRepresentation(185)
+			if !expectedUserChange.Equals(actualUserChange) {
+				t.Fatalf("charge representation generation failed, expected %+v, got %+v", expectedUserChange, actualUserChange)
+			}
+		})
+		t.Run("random number of each coin", func(t *testing.T) {
+			expectedUserChange := &payloads.UserChange{
+				HundredCentCoins: 5,
+				FiftyCentCoins:   1,
+				TwentyCentCoins:  1,
+				TenCentCoins:     1,
+				FiveCentCoins:    1,
+			}
+			actualUserChange := service.CreateChangeRepresentation(585)
+			if !expectedUserChange.Equals(actualUserChange) {
+				t.Fatalf("charge representation generation failed, expected %+v, got %+v", expectedUserChange, actualUserChange)
+			}
+		})
+	})
 	t.Run("create user_product", func(t *testing.T) {
 		t.Run("with all fields", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
@@ -82,7 +109,7 @@ func TestUserProductService(t *testing.T) {
 			t.Fatalf("user report generated wrong products list, expected it to contain: %+v, got %+v", product, userReport.Products)
 		}
 		change := buyer.Deposit - totalSpendExpected
-		expectedReportChange := payloads.CreateChangeRepresentation(change)
+		expectedReportChange := service.CreateChangeRepresentation(change)
 		if !expectedReportChange.Equals(&userReport.Change) {
 			t.Fatalf("user report generated wrong change report, expected it to contain: %+v, got %+v", expectedReportChange, userReport.Change)
 		}

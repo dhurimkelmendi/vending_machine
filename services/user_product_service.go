@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/dhurimkelmendi/vending_machine/auth"
 	"github.com/dhurimkelmendi/vending_machine/db"
@@ -29,6 +30,42 @@ func GetUserProductServiceDefaultInstance() *UserProductService {
 		}
 	}
 	return userProductServiceDefaultInstance
+}
+
+// CreateChangeRepresentation returns a UserChange instance from a given int32
+func (s *UserProductService) CreateChangeRepresentation(change int32) *payloads.UserChange {
+	userChange := &payloads.UserChange{}
+	if change < 0 {
+		return userChange
+	}
+
+	changeString := strconv.Itoa(int(change))
+	hundreds, err := strconv.Atoi(changeString[0 : len(changeString)-2])
+	if err != nil {
+		userChange.HundredCentCoins = 0
+	}
+	userChange.HundredCentCoins = int32(hundreds)
+	tens, err := strconv.Atoi(changeString[len(changeString)-2 : len(changeString)-1])
+	if err != nil {
+		userChange.TenCentCoins = 0
+		userChange.FiftyCentCoins = 0
+		userChange.TwentyCentCoins = 0
+	}
+	if tens/5 > 0 {
+		userChange.FiftyCentCoins = int32(tens / 5)
+		tens -= 5
+	}
+	if tens/2 > 0 {
+		userChange.TwentyCentCoins = int32(tens / 2)
+		tens -= 2
+	}
+	if tens > 0 {
+		userChange.TenCentCoins = int32(tens)
+	}
+
+	ones, err := strconv.Atoi(string(changeString[len(changeString)-1:]))
+	userChange.FiveCentCoins = int32(ones / 5)
+	return userChange
 }
 
 // GetUserBuysReport returns all userProducts related to a given user, with the amount spent and change(if any)
@@ -64,7 +101,7 @@ func (s *UserProductService) getUserBuysReport(userID uuid.UUID) (*payloads.User
 	}
 	userReport.Products = user.Products
 	userChange := user.Deposit - userReport.AmountSpent
-	userReport.Change = *payloads.CreateChangeRepresentation(userChange)
+	userReport.Change = *s.CreateChangeRepresentation(userChange)
 
 	return userReport, nil
 }

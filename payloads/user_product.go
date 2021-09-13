@@ -3,7 +3,6 @@ package payloads
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/dhurimkelmendi/vending_machine/models"
 	uuid "github.com/satori/go.uuid"
@@ -41,42 +40,6 @@ func (p *UserChange) Equals(secondProduct *UserChange) bool {
 		return false
 	}
 	return true
-}
-
-// CreateChangeRepresentation returns a UserChange instance from a given int32
-func CreateChangeRepresentation(change int32) *UserChange {
-	userChange := &UserChange{}
-	if change < 0 {
-		return userChange
-	}
-
-	changeString := strconv.Itoa(int(change))
-	hundreds, err := strconv.Atoi(changeString[0 : len(changeString)-2])
-	if err != nil {
-		userChange.HundredCentCoins = 0
-	}
-	userChange.HundredCentCoins = int32(hundreds)
-	tens, err := strconv.Atoi(changeString[len(changeString)-2 : len(changeString)-1])
-	if err != nil {
-		userChange.TenCentCoins = 0
-		userChange.FiftyCentCoins = 0
-		userChange.TwentyCentCoins = 0
-	}
-	if tens/5 > 0 {
-		userChange.FiftyCentCoins = int32(tens / 5)
-		tens -= 5
-	}
-	if tens/2 > 0 {
-		userChange.TwentyCentCoins = int32(tens / 2)
-		tens -= 2
-	}
-	if tens > 0 {
-		userChange.TenCentCoins = int32(tens)
-	}
-
-	ones, err := strconv.Atoi(string(changeString[len(changeString)-1:]))
-	userChange.FiveCentCoins = int32(ones / 5)
-	return userChange
 }
 
 // UserBuysReport is a struct that represents the products bought from a user
