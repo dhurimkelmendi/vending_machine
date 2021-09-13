@@ -38,7 +38,7 @@ func GetUserFixtureDefaultInstance() *UserFixture {
 	return userFixtureDefaultInstance
 }
 
-// CreateBuyerUser creates a user with fake data with admin role
+// CreateBuyerUser creates a user with fake data with buyer role
 func (f *UserFixture) CreateBuyerUser(t *testing.T) *models.User {
 	user := &payloads.CreateUserPayload{}
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
@@ -59,7 +59,7 @@ func (f *UserFixture) CreateBuyerUser(t *testing.T) *models.User {
 	return registeredUser
 }
 
-// CreateSellerUser creates a user with fake data with user role
+// CreateSellerUser creates a user with fake data with seller role
 func (f *UserFixture) CreateSellerUser(t *testing.T) *models.User {
 	user := &payloads.CreateUserPayload{}
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]

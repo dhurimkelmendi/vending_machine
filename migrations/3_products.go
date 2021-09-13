@@ -11,10 +11,10 @@ func init() {
 		_, err := db.Exec(`
 		CREATE TABLE products (
 			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-			name text,
-			seller_id uuid REFERENCES users(id), 
-			amount_available int,
-			cost int
+			name text UNIQUE NOT NULL,
+			seller_id uuid REFERENCES users(id) NOT NULL,
+			amount_available int NOT NULL,
+			cost int NOT NULL
 		);`)
 		return err
 	}, func(db migrations.DB) error {
