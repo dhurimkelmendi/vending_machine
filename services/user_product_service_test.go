@@ -20,8 +20,8 @@ func TestUserProductService(t *testing.T) {
 	userProduct := fixture.UserProduct.CreateUserProduct(t, product.ID, buyer.ID)
 	ctx := context.Background()
 
-	t.Run("create userProduct", func(t *testing.T) {
-		t.Run("create userProduct with all fields", func(t *testing.T) {
+	t.Run("create user_product", func(t *testing.T) {
+		t.Run("with all fields", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
 			userProductToCreate.UserID = seller.ID
@@ -31,7 +31,7 @@ func TestUserProductService(t *testing.T) {
 				t.Fatalf("error while creating userProduct %+v", err)
 			}
 		})
-		t.Run("create userProduct without product_id", func(t *testing.T) {
+		t.Run("without product_id", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.UserID = seller.ID
 			userProductToCreate.Amount = int32(gofakeit.Uint16())
@@ -40,7 +40,7 @@ func TestUserProductService(t *testing.T) {
 				t.Fatal("expected create to fail without product_id, create was allowed")
 			}
 		})
-		t.Run("create userProduct without user_id", func(t *testing.T) {
+		t.Run("without user_id", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
 			userProductToCreate.Amount = int32(gofakeit.Uint16())
@@ -49,7 +49,7 @@ func TestUserProductService(t *testing.T) {
 				t.Fatal("expected create to fail without user_id, create was allowed")
 			}
 		})
-		t.Run("create userProduct without amount", func(t *testing.T) {
+		t.Run("without amount", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
 			userProductToCreate.UserID = seller.ID

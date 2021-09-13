@@ -98,7 +98,7 @@ func (s *UserProductService) createUserProduct(dbSession *pg.Tx, createUserProdu
 	if err := createUserProduct.Validate(); err != nil {
 		return createdUserProduct, err
 	}
-	_, err := dbSession.Model(createUserProduct).Insert()
+	_, err := dbSession.Model(createdUserProduct).Insert()
 	if err != nil {
 		return createdUserProduct, err
 	}

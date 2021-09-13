@@ -12,7 +12,7 @@ func init() {
 		CREATE TABLE products (
 			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
 			name text UNIQUE NOT NULL,
-			seller_id uuid REFERENCES users(id) NOT NULL,
+			seller_id uuid REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
 			amount_available int NOT NULL,
 			cost int NOT NULL
 		);`)

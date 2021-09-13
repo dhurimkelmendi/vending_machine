@@ -2,6 +2,7 @@ package fixtures
 
 import (
 	"context"
+	"math/rand"
 	"strings"
 	"testing"
 
@@ -43,7 +44,8 @@ func (f *ProductFixture) CreateProduct(t *testing.T, sellerID uuid.UUID) *models
 	product := &payloads.CreateProductPayload{}
 	product.Name = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 	product.SellerID = sellerID
-	product.Cost = int32(gofakeit.Uint32())
+	//make sure cost is divisible by 5
+	product.Cost = int32(rand.Intn(100)) * 5
 	product.AmountAvailable = int32(gofakeit.Uint32())
 
 	ctx := context.Background()

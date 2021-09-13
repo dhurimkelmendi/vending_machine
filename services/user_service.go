@@ -16,8 +16,10 @@ import (
 
 // UserService is a struct that contains references to the db and the StatelessAuthenticationProvider
 type UserService struct {
-	db        *pg.DB
-	stateless *auth.StatelessAuthenticationProvider
+	db                 *pg.DB
+	stateless          *auth.StatelessAuthenticationProvider
+	userProductService *UserProductService
+	productService     *ProductService
 }
 
 var userServiceDefaultInstance *UserService
@@ -26,8 +28,10 @@ var userServiceDefaultInstance *UserService
 func GetUserServiceDefaultInstance() *UserService {
 	if userServiceDefaultInstance == nil {
 		userServiceDefaultInstance = &UserService{
-			db:        db.GetDefaultInstance().GetDB(),
-			stateless: auth.GetStatelessAuthenticationProviderDefaultInstance(),
+			db:                 db.GetDefaultInstance().GetDB(),
+			stateless:          auth.GetStatelessAuthenticationProviderDefaultInstance(),
+			userProductService: GetUserProductServiceDefaultInstance(),
+			productService:     GetProductServiceDefaultInstance(),
 		}
 	}
 
@@ -260,4 +264,51 @@ func (s *UserService) deleteUser(dbSession *pg.Tx, userID uuid.UUID) error {
 	}
 
 	return err
+}
+
+// BuyProduct links a product to the given user
+func (s *UserService) BuyProduct(ctx context.Context, createUserProduct *payloads.UserProductPurchase) (*payloads.UserBuysReport, error) {
+	var userReport *payloads.UserBuysReport
+
+	var err error
+	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
+		userReport, err = s.buyProduct(ctx, tx, createUserProduct)
+		return err
+	})
+
+	return userReport, err
+}
+func (s *UserService) buyProduct(ctx context.Context, dbSession *pg.Tx, createUserProduct *payloads.UserProductPurchase) (*payloads.UserBuysReport, error) {
+	userReport := &payloads.UserBuysReport{}
+
+	user := &models.User{ID: createUserProduct.UserID}
+	user, err := s.GetUserByID(user.ID)
+	if err != nil {
+		return userReport, db.ErrNoMatch
+	}
+
+	product, err := s.productService.GetProductByID(createUserProduct.ProductID)
+	if err != nil {
+		return userReport, db.ErrNoMatch
+	}
+
+	amountToBeSpent := product.Cost * createUserProduct.Amount
+	if user.Deposit < amountToBeSpent {
+		return userReport, fmt.Errorf("unable to buy product amount, deposit too low")
+	}
+	if _, err = s.userProductService.CreateUserProduct(ctx, createUserProduct); err != nil {
+		return userReport, err
+	}
+	user.Deposit -= amountToBeSpent
+	if _, err := dbSession.Model(user).Where("id = ?", user.ID).Update(); err != nil {
+		if err == pg.ErrNoRows {
+			return userReport, db.ErrNoMatch
+		}
+		return userReport, err
+	}
+	userReport, err = s.userProductService.GetUserBuysReport(user.ID)
+	if err != nil {
+		return userReport, err
+	}
+	return userReport, err
 }

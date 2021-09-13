@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit"
-	"github.com/dhurimkelmendi/vending_machine/config"
 	"github.com/dhurimkelmendi/vending_machine/db"
 	"github.com/dhurimkelmendi/vending_machine/models"
 	"github.com/dhurimkelmendi/vending_machine/payloads"
@@ -46,10 +45,8 @@ func (f *UserFixture) CreateBuyerUser(t *testing.T) *models.User {
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 	user.Password = gofakeit.Password(true, false, false, false, false, 10)
 	user.Role = models.UserRoleBuyer
-	acceptableAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
-	newDepositAmount := acceptableAmountValues[rand.Intn(len(acceptableAmountValues))]
 
-	user.Deposit = newDepositAmount
+	user.Deposit = int32(rand.Intn(1000)+rand.Intn(1000)) * 5
 
 	ctx := context.Background()
 
@@ -57,11 +54,11 @@ func (f *UserFixture) CreateBuyerUser(t *testing.T) *models.User {
 		t.Log("CreateBuyerUser: fixture.UserService is nil!")
 	}
 
-	registeredUser, err := f.userService.CreateUser(ctx, user)
+	createdUser, err := f.userService.CreateUser(ctx, user)
 	if err != nil {
 		return nil
 	}
-	return registeredUser
+	return createdUser
 }
 
 // CreateSellerUser creates a user with fake data with seller role
@@ -70,19 +67,17 @@ func (f *UserFixture) CreateSellerUser(t *testing.T) *models.User {
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 	user.Password = "password"
 	user.Role = models.UserRoleSeller
-	acceptableAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
-	newDepositAmount := acceptableAmountValues[rand.Intn(len(acceptableAmountValues))]
 
-	user.Deposit = newDepositAmount
+	user.Deposit = int32(rand.Intn(1000)+rand.Intn(1000)) * 5
 
 	ctx := context.Background()
 
 	if f.userService == nil {
 		t.Log("CreateSellerUser: fixture.UserService is nil!")
 	}
-	registeredUser, err := f.userService.CreateUser(ctx, user)
+	createdUser, err := f.userService.CreateUser(ctx, user)
 	if err != nil {
 		return nil
 	}
-	return registeredUser
+	return createdUser
 }

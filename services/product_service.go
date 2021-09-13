@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/dhurimkelmendi/vending_machine/auth"
 	"github.com/dhurimkelmendi/vending_machine/db"
@@ -15,9 +14,8 @@ import (
 
 // ProductService is a struct that contains references to the db and the StatelessAuthenticationProvider
 type ProductService struct {
-	db          *pg.DB
-	stateless   *auth.StatelessAuthenticationProvider
-	userService *UserService
+	db        *pg.DB
+	stateless *auth.StatelessAuthenticationProvider
 }
 
 var productServiceDefaultInstance *ProductService
@@ -26,9 +24,8 @@ var productServiceDefaultInstance *ProductService
 func GetProductServiceDefaultInstance() *ProductService {
 	if productServiceDefaultInstance == nil {
 		productServiceDefaultInstance = &ProductService{
-			db:          db.GetDefaultInstance().GetDB(),
-			stateless:   auth.GetStatelessAuthenticationProviderDefaultInstance(),
-			userService: GetUserServiceDefaultInstance(),
+			db:        db.GetDefaultInstance().GetDB(),
+			stateless: auth.GetStatelessAuthenticationProviderDefaultInstance(),
 		}
 	}
 
@@ -73,10 +70,7 @@ func (s *ProductService) CreateProduct(ctx context.Context, createProduct *paylo
 	if err := createProduct.Validate(); err != nil {
 		return product, err
 	}
-	user, err := s.userService.getUserByID(createProduct.SellerID)
-	if err != nil || user.Role != models.UserRoleSeller {
-		return product, fmt.Errorf("user must exist and have seller role")
-	}
+	var err error
 	err = s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
 		product, err = s.createProduct(tx, createProduct)
 		return err
