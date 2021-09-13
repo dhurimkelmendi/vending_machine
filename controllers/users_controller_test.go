@@ -226,6 +226,47 @@ func TestUserController(t *testing.T) {
 			})
 		})
 	})
+	t.Run("reset deposit", func(t *testing.T) {
+		r := chi.NewRouter()
+		URL := fmt.Sprintf("/api/v1/reset")
+		r.Post("/api/v1/reset", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDepositMoney, ctrl.Users.ResetDeposit, buyerOnlyOptions))
+
+		t.Run("as seller(without permission)", func(t *testing.T) {
+			bBuf := bytes.NewBuffer([]byte(""))
+			req := httptest.NewRequest(http.MethodPost, URL, bBuf)
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", sellerUser.Token))
+
+			res := httptest.NewRecorder()
+			r.ServeHTTP(res, req)
+
+			if res.Code != http.StatusForbidden {
+				t.Fatalf("expected http status code of 403 but got: %+v, %+v", res.Code, res.Body.String())
+			}
+		})
+		t.Run("as buyer", func(t *testing.T) {
+			bBuf := bytes.NewBuffer([]byte(""))
+			req := httptest.NewRequest(http.MethodPost, URL, bBuf)
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
+			res := httptest.NewRecorder()
+			r.ServeHTTP(res, req)
+
+			if res.Code != http.StatusOK {
+				t.Fatalf("expected http status code of 200 but got: %+v, %+v", res.Code, res.Body.String())
+			}
+
+			body := make(map[string]interface{})
+			dec := json.NewDecoder(strings.NewReader(res.Body.String()))
+			err := dec.Decode(&body)
+			if err != nil {
+				t.Fatalf("error decoding response body: %+v", err)
+			}
+
+			deposit := body["deposit"].(float64)
+			if int32(deposit) != 0 {
+				t.Fatalf("unexpected deposit amount, got: %+v", deposit)
+			}
+		})
+	})
 
 	t.Run("delete user", func(t *testing.T) {
 		r := chi.NewRouter()

@@ -194,12 +194,31 @@ func (c *UsersController) DepositMoney(w http.ResponseWriter, r *http.Request, u
 
 	updatedUser, err := c.userService.DepositMoney(ctx, depositMoney)
 	if err != nil {
-		c.responder.Error(w, errCtx(api.ErrUpdateUser, err), http.StatusBadRequest)
+		c.responder.Error(w, errCtx(api.ErrDepositMoney, err), http.StatusBadRequest)
 		return
 	}
 
 	if err := render.Render(w, r, updatedUser); err != nil {
-		c.responder.Error(w, errCtx(api.ErrUpdateUser, err), http.StatusBadRequest)
+		c.responder.Error(w, errCtx(api.ErrDepositMoney, err), http.StatusBadRequest)
+		return
+	}
+}
+
+// ResetDeposit reset current users deposit amount
+func (c *UsersController) ResetDeposit(w http.ResponseWriter, r *http.Request, userContext auth.UserContext) {
+	errCtx := c.errCmp(api.CtxDepositMoney, r.Header.Get("X-Request-Id"))
+
+	ctx := context.Background()
+	defer r.Body.Close()
+
+	updatedUser, err := c.userService.ResetDeposit(ctx, userContext.ID)
+	if err != nil {
+		c.responder.Error(w, errCtx(api.ErrResetDeposit, err), http.StatusBadRequest)
+		return
+	}
+
+	if err := render.Render(w, r, updatedUser); err != nil {
+		c.responder.Error(w, errCtx(api.ErrResetDeposit, err), http.StatusBadRequest)
 		return
 	}
 }

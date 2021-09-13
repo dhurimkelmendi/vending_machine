@@ -53,6 +53,8 @@ var (
 	ErrLoginUser    = NewResponseError("errLoginUser", "unable to login user")
 	ErrCreateUser   = NewResponseError("errCreateUser", "unable to register user")
 	ErrUpdateUser   = NewResponseError("errUpdateUser", "unable to update user")
+	ErrDepositMoney = NewResponseError("errDepositMoney", "unable to update user deposit")
+	ErrResetDeposit = NewResponseError("errResetDeposit", "unable to reset user deposit")
 	ErrDeleteUser   = NewResponseError("errDeleteUser", "unable to delete user")
 
 	// Product errors
