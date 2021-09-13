@@ -108,7 +108,6 @@ func (u *LoginUserPayload) Render(w http.ResponseWriter, r *http.Request) error 
 type UpdateUserPayload struct {
 	ID       uuid.UUID `json:"id"`
 	Username string    `json:"username"`
-	Deposit  int32     `json:"deposit"`
 }
 
 // ToUserModel converts an instance of type *UpdateUserPayload to *models.User type
@@ -116,7 +115,6 @@ func (u *UpdateUserPayload) ToUserModel() *models.User {
 	return &models.User{
 		ID:       u.ID,
 		Username: u.Username,
-		Deposit:  u.Deposit,
 	}
 }
 

@@ -144,8 +144,8 @@ func TestProductService(t *testing.T) {
 			productToUpdate.ID = newID
 			newCost := int32(gofakeit.Uint32())
 			productToUpdate.Cost = newCost
-			updatedProduct, _ := service.UpdateProduct(ctx, productToUpdate, sellerUserContext)
-			if updatedProduct.ID == newID {
+			_, err := service.UpdateProduct(ctx, productToUpdate, sellerUserContext)
+			if err == nil {
 				t.Fatal("expected id not to be updated, update was allowed")
 			}
 		})

@@ -22,6 +22,7 @@ func TestUserService(t *testing.T) {
 
 	service := services.GetUserServiceDefaultInstance()
 	user := fixture.User.CreateSellerUser(t)
+	acceptableDepositAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
 
 	ctx := context.Background()
 
@@ -32,7 +33,7 @@ func TestUserService(t *testing.T) {
 				userToCreate.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 				userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
 				userToCreate.Role = models.UserRoleBuyer
-				userToCreate.Deposit = gofakeit.Int32()
+				userToCreate.Deposit = acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
 				createedUser, err := service.CreateUser(ctx, userToCreate)
 				if err != nil {
 					t.Fatalf("error while creating user %+v", err)
@@ -49,7 +50,7 @@ func TestUserService(t *testing.T) {
 				userToCreate.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 				userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
 				userToCreate.Role = models.UserRoleSeller
-				userToCreate.Deposit = gofakeit.Int32()
+				userToCreate.Deposit = acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
 				createdUser, err := service.CreateUser(ctx, userToCreate)
 				if err != nil {
 					t.Fatalf("error while creating user %+v", err)
@@ -71,7 +72,7 @@ func TestUserService(t *testing.T) {
 			userToCreate.Username = user.Username
 			userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
 			userToCreate.Role = models.UserRoleBuyer
-			userToCreate.Deposit = gofakeit.Int32()
+			userToCreate.Deposit = acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
 			_, err := service.CreateUser(ctx, userToCreate)
 			if err == nil {
 				t.Fatalf("expected duplicate user to fail %+v", err)
@@ -81,7 +82,7 @@ func TestUserService(t *testing.T) {
 			userToCreate := &payloads.CreateUserPayload{}
 			userToCreate.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 			userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
-			userToCreate.Deposit = gofakeit.Int32()
+			userToCreate.Deposit = acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
 			_, err := service.CreateUser(ctx, userToCreate)
 			if err == nil {
 				t.Fatal("expected create to fail without Role, create was allowed")
@@ -150,8 +151,7 @@ func TestUserService(t *testing.T) {
 			}
 		})
 		t.Run("deposit acceptable amount", func(t *testing.T) {
-			acceptableAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
-			newDepositAmount := acceptableAmountValues[rand.Intn(len(acceptableAmountValues))]
+			newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
 			oldDepositAmount := user.Deposit
 			userToUpdate := &payloads.DepositMoneyPayload{}
 			userToUpdate.ID = user.ID
@@ -169,14 +169,14 @@ func TestUserService(t *testing.T) {
 		t.Run("with basic attributes", func(t *testing.T) {
 			userToUpdate := &payloads.UpdateUserPayload{}
 			userToUpdate.ID = user.ID
-			newDepositAmount := gofakeit.Int32()
-			userToUpdate.Deposit = newDepositAmount
+			newUsername := strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
+			userToUpdate.Username = newUsername
 			updatedUser, err := service.UpdateUser(ctx, userToUpdate)
 			if err != nil {
 				t.Fatalf("update user failed: %+v", err)
 			}
-			if updatedUser.Deposit != newDepositAmount {
-				t.Fatalf("expected deposit to be: %d, got: %+v", newDepositAmount, updatedUser.Deposit)
+			if updatedUser.Username != newUsername {
+				t.Fatalf("expected username to be: %s, got: %+v", newUsername, updatedUser.Username)
 			}
 		})
 		t.Run("with protected attributes", func(t *testing.T) {
@@ -184,8 +184,8 @@ func TestUserService(t *testing.T) {
 
 			newID := uuid.NewV4()
 			userToUpdate.ID = newID
-			newDepositAmount := gofakeit.Int32()
-			userToUpdate.Deposit = newDepositAmount
+			newUsername := strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
+			userToUpdate.Username = newUsername
 			updatedUser, _ := service.UpdateUser(ctx, userToUpdate)
 			if updatedUser.ID == newID {
 				t.Fatal("expected id not to be updated, update was allowed")

@@ -114,7 +114,7 @@ func (c *ProductsController) CreateProduct(w http.ResponseWriter, r *http.Reques
 	c.responder.JSON(w, r, createdProduct, http.StatusCreated)
 }
 
-// UpdateProduct update the current products profile
+// UpdateProduct updates the current products profile
 func (c *ProductsController) UpdateProduct(w http.ResponseWriter, r *http.Request, userContext auth.UserContext) {
 	errCtx := c.errCmp(api.CtxUpdateProduct, r.Header.Get("X-Request-Id"))
 

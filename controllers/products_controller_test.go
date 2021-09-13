@@ -65,7 +65,7 @@ func TestProductController(t *testing.T) {
 
 	t.Run("get all products", func(t *testing.T) {
 		r := chi.NewRouter()
-		r.Get("/api/v1/products", ctrl.Products.GetAllProducts)
+		r.Get("/api/v1/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxGetProducts, ctrl.Products.GetAllProducts, allUserOptions))
 		URL := "/api/v1/products"
 
 		req := httptest.NewRequest(http.MethodGet, URL, nil)

@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/brianvoe/gofakeit"
 	"github.com/dhurimkelmendi/vending_machine/api"
+	"github.com/dhurimkelmendi/vending_machine/config"
 	"github.com/dhurimkelmendi/vending_machine/controllers"
 	"github.com/dhurimkelmendi/vending_machine/fixtures"
 	"github.com/dhurimkelmendi/vending_machine/models"
@@ -23,10 +24,15 @@ func TestUserController(t *testing.T) {
 	fixture := fixtures.GetFixturesDefaultInstance()
 
 	ctrl := controllers.GetControllersDefaultInstance()
-	user := fixture.User.CreateBuyerUser(t)
+	buyerUser := fixture.User.CreateBuyerUser(t)
+	sellerUser := fixture.User.CreateSellerUser(t)
 	allUserOptions := controllers.AuthorizationOptions{
 		AllowedUserRoles: []models.UserRole{models.UserRoleSeller, models.UserRoleBuyer},
 	}
+	buyerOnlyOptions := controllers.AuthorizationOptions{
+		AllowedUserRoles: []models.UserRole{models.UserRoleBuyer},
+	}
+	acceptableDepositAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
 
 	// generate non-existing user token by using user.ID = -1, which doesn't exist because user.ID is autoincrement
 	invalidUserToken, _ := GetInvalidAuthToken()
@@ -36,7 +42,7 @@ func TestUserController(t *testing.T) {
 		r.Post("/api/v1/users", ctrl.Users.CreateUser)
 
 		bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"username":"%s", "password":"123456789", "role": "%s", "deposit": %d}`,
-			strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18], models.UserRoleBuyer, gofakeit.Uint32())))
+			strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18], models.UserRoleBuyer, acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))])))
 		req := httptest.NewRequest(http.MethodPost, "/api/v1/users", bBuf)
 
 		res := httptest.NewRecorder()
@@ -49,11 +55,11 @@ func TestUserController(t *testing.T) {
 
 	t.Run("get user", func(t *testing.T) {
 		r := chi.NewRouter()
-		URL := fmt.Sprintf("/api/v1/users/%s", user.ID.String())
+		URL := fmt.Sprintf("/api/v1/users/%s", buyerUser.ID.String())
 		r.Get("/api/v1/users/{id}", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUser, ctrl.Users.GetUserByID, allUserOptions))
 
 		req := httptest.NewRequest(http.MethodGet, URL, nil)
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", user.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
 
 		res := httptest.NewRecorder()
 		r.ServeHTTP(res, req)
@@ -67,10 +73,10 @@ func TestUserController(t *testing.T) {
 		r := chi.NewRouter()
 		URL := "/api/v1/users/login"
 		r.Post("/api/v1/users/login", ctrl.Users.LoginUser)
-		bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"username":"%s","password":"%s"}`, user.Username, user.Password)))
+		bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"username":"%s","password":"%s"}`, buyerUser.Username, buyerUser.Password)))
 
 		req := httptest.NewRequest(http.MethodPost, URL, bBuf)
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", user.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
 
 		res := httptest.NewRecorder()
 		r.ServeHTTP(res, req)
@@ -86,7 +92,7 @@ func TestUserController(t *testing.T) {
 		URL := "/api/v1/users"
 
 		req := httptest.NewRequest(http.MethodGet, URL, nil)
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", user.Token))
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
 
 		res := httptest.NewRecorder()
 		r.ServeHTTP(res, req)
@@ -102,8 +108,7 @@ func TestUserController(t *testing.T) {
 		r.Patch("/api/v1/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxUpdateUser, ctrl.Users.UpdateUser, allUserOptions))
 
 		t.Run("without permission", func(t *testing.T) {
-			newDepositAmount := gofakeit.Uint32()
-			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit":%d}`, user.ID, newDepositAmount)))
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","username":"%s"}`, buyerUser.ID, strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18])))
 			req := httptest.NewRequest(http.MethodPatch, URL, bBuf)
 			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", invalidUserToken))
 
@@ -118,7 +123,7 @@ func TestUserController(t *testing.T) {
 		t.Run("with empty body", func(t *testing.T) {
 			bBuf := bytes.NewBuffer([]byte(""))
 			req := httptest.NewRequest(http.MethodPatch, URL, bBuf)
-			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", user.Token))
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
 
 			res := httptest.NewRecorder()
 			r.ServeHTTP(res, req)
@@ -129,10 +134,10 @@ func TestUserController(t *testing.T) {
 		})
 
 		t.Run("with basic attributes", func(t *testing.T) {
-			newDepositAmount := gofakeit.Uint32()
-			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit":%d}`, user.ID, newDepositAmount)))
+			newUsername := strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","username":"%s"}`, buyerUser.ID, newUsername)))
 			req := httptest.NewRequest(http.MethodPatch, URL, bBuf)
-			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", user.Token))
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
 
 			res := httptest.NewRecorder()
 			r.ServeHTTP(res, req)
@@ -148,10 +153,77 @@ func TestUserController(t *testing.T) {
 				t.Fatalf("error decoding response body: %+v", err)
 			}
 
-			deposit := body["deposit"].(float64)
-			if int32(deposit) != int32(newDepositAmount) {
-				t.Fatalf("failed to parse body.deposit, got: %+v", deposit)
+			username := body["username"].(string)
+			if username != newUsername {
+				t.Fatalf("failed to parse body.username, got: %+v", username)
 			}
+		})
+	})
+	t.Run("deposit money", func(t *testing.T) {
+		r := chi.NewRouter()
+		URL := fmt.Sprintf("/api/v1/deposit")
+		r.Post("/api/v1/deposit", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDepositMoney, ctrl.Users.DepositMoney, buyerOnlyOptions))
+
+		t.Run("as seller(without permission)", func(t *testing.T) {
+			acceptableDepositAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
+			newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit":%d}`, sellerUser.ID, newDepositAmount)))
+			req := httptest.NewRequest(http.MethodPost, URL, bBuf)
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", sellerUser.Token))
+
+			res := httptest.NewRecorder()
+			r.ServeHTTP(res, req)
+
+			if res.Code != http.StatusForbidden {
+				t.Fatalf("expected http status code of 403 but got: %+v, %+v", res.Code, res.Body.String())
+			}
+		})
+		t.Run("as buyer", func(t *testing.T) {
+			t.Run("acceptable amount", func(t *testing.T) {
+				acceptableDepositAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
+				newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
+				bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit_amount":%d}`, buyerUser.ID, newDepositAmount)))
+				req := httptest.NewRequest(http.MethodPost, URL, bBuf)
+				req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
+				oldDepositAmount := buyerUser.Deposit
+				res := httptest.NewRecorder()
+				r.ServeHTTP(res, req)
+
+				if res.Code != http.StatusOK {
+					t.Fatalf("expected http status code of 200 but got: %+v, %+v", res.Code, res.Body.String())
+				}
+
+				body := make(map[string]interface{})
+				dec := json.NewDecoder(strings.NewReader(res.Body.String()))
+				err := dec.Decode(&body)
+				if err != nil {
+					t.Fatalf("error decoding response body: %+v", err)
+				}
+
+				deposit := body["deposit"].(float64)
+				if int32(deposit) != (oldDepositAmount + int32(newDepositAmount)) {
+					t.Fatalf("unexpected deposit amount, got: %+v", deposit)
+				}
+			})
+			t.Run("unacceptable amount", func(t *testing.T) {
+				newDepositAmount := 222
+				bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit_amount":%d}`, buyerUser.ID, newDepositAmount)))
+				req := httptest.NewRequest(http.MethodPost, URL, bBuf)
+				req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
+
+				res := httptest.NewRecorder()
+				r.ServeHTTP(res, req)
+
+				body := make(map[string]interface{})
+				dec := json.NewDecoder(strings.NewReader(res.Body.String()))
+				err := dec.Decode(&body)
+				if err != nil {
+					t.Fatalf("error decoding response body: %+v", err)
+				}
+				if res.Code != http.StatusBadRequest {
+					t.Fatalf("expected http status code of 400 but got: %+v, %+v", res.Code, res.Body.String())
+				}
+			})
 		})
 	})
 

@@ -115,15 +115,16 @@ func Routes() http.Handler {
 		sellerOnlyOptions := controllers.AuthorizationOptions{
 			AllowedUserRoles: []models.UserRole{models.UserRoleSeller},
 		}
-		// buyerOnlyOptions := controllers.AuthorizationOptions{
-		// 	AllowedUserRoles: []models.UserRole{models.UserRoleBuyer},
-		// }
+		buyerOnlyOptions := controllers.AuthorizationOptions{
+			AllowedUserRoles: []models.UserRole{models.UserRoleBuyer},
+		}
 
 		// users
 		r.Put("/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxUpdateUser, ctrl.Users.UpdateUser, allUserRolesOptions))
 		r.Delete("/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDeleteUser, ctrl.Users.DeleteUser, allUserRolesOptions))
 		r.Get("/users", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUsers, ctrl.Users.GetAllUsers, allUserRolesOptions))
 		r.Get("/users/{id}", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUser, ctrl.Users.GetUserByID, allUserRolesOptions))
+		r.Post("/deposit", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDepositMoney, ctrl.Users.DepositMoney, buyerOnlyOptions))
 
 		// products
 		r.Get("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxGetProducts, ctrl.Products.GetAllProducts, allUserRolesOptions))

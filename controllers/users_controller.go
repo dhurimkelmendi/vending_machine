@@ -147,7 +147,7 @@ func (c *UsersController) GetUserByID(w http.ResponseWriter, r *http.Request, us
 	}
 }
 
-// UpdateUser update the current users profile
+// UpdateUser updates the current users profile
 func (c *UsersController) UpdateUser(w http.ResponseWriter, r *http.Request, userContext auth.UserContext) {
 	errCtx := c.errCmp(api.CtxUpdateUser, r.Header.Get("X-Request-Id"))
 
@@ -167,6 +167,32 @@ func (c *UsersController) UpdateUser(w http.ResponseWriter, r *http.Request, use
 	defer r.Body.Close()
 
 	updatedUser, err := c.userService.UpdateUser(ctx, user)
+	if err != nil {
+		c.responder.Error(w, errCtx(api.ErrUpdateUser, err), http.StatusBadRequest)
+		return
+	}
+
+	if err := render.Render(w, r, updatedUser); err != nil {
+		c.responder.Error(w, errCtx(api.ErrUpdateUser, err), http.StatusBadRequest)
+		return
+	}
+}
+
+// DepositMoney updates current users deposit amount
+func (c *UsersController) DepositMoney(w http.ResponseWriter, r *http.Request, userContext auth.UserContext) {
+	errCtx := c.errCmp(api.CtxDepositMoney, r.Header.Get("X-Request-Id"))
+
+	depositMoney := &payloads.DepositMoneyPayload{}
+	if err := json.NewDecoder(r.Body).Decode(depositMoney); err != nil {
+		c.responder.Error(w, errCtx(api.ErrInvalidRequestPayload, errors.New("cannot decode deposit payload")), http.StatusBadRequest)
+		return
+	}
+	depositMoney.ID = userContext.ID
+
+	ctx := context.Background()
+	defer r.Body.Close()
+
+	updatedUser, err := c.userService.DepositMoney(ctx, depositMoney)
 	if err != nil {
 		c.responder.Error(w, errCtx(api.ErrUpdateUser, err), http.StatusBadRequest)
 		return

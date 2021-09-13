@@ -13,12 +13,13 @@ const (
 
 // User error contexts
 const (
-	CtxGetUsers   ErrorContext = "ctxGetUsers"
-	CtxGetUser    ErrorContext = "ctxGetUser"
-	CtxLoginUser  ErrorContext = "ctxLoginUser"
-	CtxCreateUser ErrorContext = "ctxCreateUser"
-	CtxUpdateUser ErrorContext = "ctxUpdateUser"
-	CtxDeleteUser ErrorContext = "ctxDeleteUser"
+	CtxGetUsers     ErrorContext = "ctxGetUsers"
+	CtxGetUser      ErrorContext = "ctxGetUser"
+	CtxLoginUser    ErrorContext = "ctxLoginUser"
+	CtxCreateUser   ErrorContext = "ctxCreateUser"
+	CtxUpdateUser   ErrorContext = "ctxUpdateUser"
+	CtxDepositMoney ErrorContext = "ctxDepositMoney"
+	CtxDeleteUser   ErrorContext = "ctxDeleteUser"
 )
 
 // Product error contexts

@@ -2,10 +2,12 @@ package fixtures
 
 import (
 	"context"
+	"math/rand"
 	"strings"
 	"testing"
 
 	"github.com/brianvoe/gofakeit"
+	"github.com/dhurimkelmendi/vending_machine/config"
 	"github.com/dhurimkelmendi/vending_machine/db"
 	"github.com/dhurimkelmendi/vending_machine/models"
 	"github.com/dhurimkelmendi/vending_machine/payloads"
@@ -44,7 +46,10 @@ func (f *UserFixture) CreateBuyerUser(t *testing.T) *models.User {
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 	user.Password = gofakeit.Password(true, false, false, false, false, 10)
 	user.Role = models.UserRoleBuyer
-	user.Deposit = int32(gofakeit.Uint32())
+	acceptableAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
+	newDepositAmount := acceptableAmountValues[rand.Intn(len(acceptableAmountValues))]
+
+	user.Deposit = newDepositAmount
 
 	ctx := context.Background()
 
@@ -65,7 +70,10 @@ func (f *UserFixture) CreateSellerUser(t *testing.T) *models.User {
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 	user.Password = "password"
 	user.Role = models.UserRoleSeller
-	user.Deposit = int32(gofakeit.Uint32())
+	acceptableAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
+	newDepositAmount := acceptableAmountValues[rand.Intn(len(acceptableAmountValues))]
+
+	user.Deposit = newDepositAmount
 
 	ctx := context.Background()
 
