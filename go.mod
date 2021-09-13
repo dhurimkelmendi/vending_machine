@@ -9,6 +9,7 @@ require (
 	github.com/go-chi/jwtauth/v5 v5.0.1
 	github.com/go-chi/render v1.0.1
 	github.com/go-pg/migrations/v8 v8.1.0
+	github.com/go-pg/pg v8.0.7+incompatible
 	github.com/go-pg/pg/extra/pgdebug v0.2.0
 	github.com/go-pg/pg/v10 v10.10.5
 	github.com/lestrrat-go/jwx v1.2.6

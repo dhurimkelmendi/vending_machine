@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	"github.com/dhurimkelmendi/vending_machine/config"
+	"github.com/dhurimkelmendi/vending_machine/models"
 
 	"github.com/go-pg/pg/extra/pgdebug"
 	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 
 	//blank import pq
 	_ "github.com/lib/pq"
@@ -33,6 +35,8 @@ func GetDefaultInstance() *Database {
 			config: config.GetDefaultInstance(),
 		}
 		defaultInstance.connect()
+		// register all many-to-many relationships
+		orm.RegisterTable((*models.UsersProduct)(nil))
 	}
 	return defaultInstance
 }

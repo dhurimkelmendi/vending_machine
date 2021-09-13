@@ -17,13 +17,14 @@ const (
 
 // User is a struct that represents a db row of the Users table
 type User struct {
-	tableName struct{}  `pg:"users"`
-	ID        uuid.UUID `pg:"id,pk,type:uuid"`
-	Username  string    `json:"username"`
-	Password  string    `json:"password"`
-	Token     string    `json:"token"`
-	Role      UserRole  `json:"role"`
-	Deposit   int32     `json:"deposit"`
+	tableName struct{}   `pg:"users"`
+	ID        uuid.UUID  `pg:"id,pk,type:uuid"`
+	Username  string     `json:"username"`
+	Password  string     `json:"password"`
+	Token     string     `json:"token"`
+	Role      UserRole   `json:"role"`
+	Deposit   int32      `json:"deposit"`
+	Products  []*Product `pg:"many2many:users_products"`
 }
 
 // Merge merges two instances of type User into one
