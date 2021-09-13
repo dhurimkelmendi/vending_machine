@@ -24,66 +24,66 @@ func TestUserService(t *testing.T) {
 
 	ctx := context.Background()
 
-	t.Run("register user", func(t *testing.T) {
-		t.Run("register user with all fields", func(t *testing.T) {
-			t.Run("register as buyer", func(t *testing.T) {
-				userToRegister := &payloads.CreateUserPayload{}
-				userToRegister.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
-				userToRegister.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
-				userToRegister.Role = models.UserRoleBuyer
-				userToRegister.Deposit = gofakeit.Int32()
-				registeredUser, err := service.CreateUser(ctx, userToRegister)
+	t.Run("create user", func(t *testing.T) {
+		t.Run("create user with all fields", func(t *testing.T) {
+			t.Run("create as buyer", func(t *testing.T) {
+				userToCreate := &payloads.CreateUserPayload{}
+				userToCreate.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
+				userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
+				userToCreate.Role = models.UserRoleBuyer
+				userToCreate.Deposit = gofakeit.Int32()
+				createedUser, err := service.CreateUser(ctx, userToCreate)
 				if err != nil {
 					t.Fatalf("error while creating user %+v", err)
 				}
-				userToRegisterModel := userToRegister.ToUserModel()
-				userToRegisterModel.ID = registeredUser.ID
-				userToRegisterModel.Token = registeredUser.Token
-				if !userToRegisterModel.Equals(registeredUser) {
-					t.Fatalf("register user failed: %+v \n received: %+v, %+v", userToRegisterModel, registeredUser, err)
+				userToCreateModel := userToCreate.ToUserModel()
+				userToCreateModel.ID = createedUser.ID
+				userToCreateModel.Token = createedUser.Token
+				if !userToCreateModel.Equals(createedUser) {
+					t.Fatalf("create user failed: %+v \n received: %+v, %+v", userToCreateModel, createedUser, err)
 				}
 			})
-			t.Run("register as seller", func(t *testing.T) {
-				userToRegister := &payloads.CreateUserPayload{}
-				userToRegister.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
-				userToRegister.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
-				userToRegister.Role = models.UserRoleSeller
-				userToRegister.Deposit = gofakeit.Int32()
-				registeredUser, err := service.CreateUser(ctx, userToRegister)
+			t.Run("create as seller", func(t *testing.T) {
+				userToCreate := &payloads.CreateUserPayload{}
+				userToCreate.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
+				userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
+				userToCreate.Role = models.UserRoleSeller
+				userToCreate.Deposit = gofakeit.Int32()
+				createdUser, err := service.CreateUser(ctx, userToCreate)
 				if err != nil {
 					t.Fatalf("error while creating user %+v", err)
 				}
-				userToRegisterModel := userToRegister.ToUserModel()
-				userToRegisterModel.ID = registeredUser.ID
-				userToRegisterModel.Token = registeredUser.Token
-				if !userToRegisterModel.Equals(registeredUser) {
-					t.Fatalf("register user failed: %+v \n received: %+v, %+v", userToRegisterModel, registeredUser, err)
+				userToCreateModel := userToCreate.ToUserModel()
+				userToCreateModel.ID = createdUser.ID
+				userToCreateModel.Token = createdUser.Token
+				if !userToCreateModel.Equals(createdUser) {
+					t.Fatalf("create user failed: %+v \n received: %+v, %+v", userToCreateModel, createdUser, err)
 				}
 			})
 		})
-		t.Run("register user with existing username", func(t *testing.T) {
-			userToRegister := &payloads.CreateUserPayload{}
+		t.Run("create user with existing username", func(t *testing.T) {
+			userToCreate := &payloads.CreateUserPayload{}
 			fakeDate := gofakeit.Date().Unix()
 			if fakeDate < 0 {
 				fakeDate = fakeDate * -1
 			}
-			userToRegister.Username = user.Username
-			userToRegister.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
-			userToRegister.Role = models.UserRoleBuyer
-			userToRegister.Deposit = gofakeit.Int32()
-			_, err := service.CreateUser(ctx, userToRegister)
+			userToCreate.Username = user.Username
+			userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
+			userToCreate.Role = models.UserRoleBuyer
+			userToCreate.Deposit = gofakeit.Int32()
+			_, err := service.CreateUser(ctx, userToCreate)
 			if err == nil {
 				t.Fatalf("expected duplicate user to fail %+v", err)
 			}
 		})
-		t.Run("register user with no role", func(t *testing.T) {
-			userToRegister := &payloads.CreateUserPayload{}
-			userToRegister.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
-			userToRegister.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
-			userToRegister.Deposit = gofakeit.Int32()
-			_, err := service.CreateUser(ctx, userToRegister)
+		t.Run("create user with no role", func(t *testing.T) {
+			userToCreate := &payloads.CreateUserPayload{}
+			userToCreate.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
+			userToCreate.Password = fmt.Sprintf("password_%d", rand.Intn(100000))
+			userToCreate.Deposit = gofakeit.Int32()
+			_, err := service.CreateUser(ctx, userToCreate)
 			if err == nil {
-				t.Fatal("expected register to fail without Role, register was allowed")
+				t.Fatal("expected create to fail without Role, create was allowed")
 			}
 		})
 	})
