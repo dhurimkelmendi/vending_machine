@@ -208,6 +208,33 @@ func (s *UserService) depositMoney(dbSession *pg.Tx, depositMoney *payloads.Depo
 	return user, nil
 }
 
+// ResetDeposit resets the user deposit
+func (s *UserService) ResetDeposit(ctx context.Context, userID uuid.UUID) (*models.User, error) {
+	var updatedUser *models.User
+
+	var err error
+	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
+		updatedUser, err = s.resetDeposit(tx, userID)
+		return err
+	})
+
+	return updatedUser, err
+}
+func (s *UserService) resetDeposit(dbSession *pg.Tx, userID uuid.UUID) (*models.User, error) {
+	user, err := s.GetUserByID(userID)
+	if err != nil {
+		return &models.User{}, db.ErrNoMatch
+	}
+	user.Deposit = 0
+	if _, err := dbSession.Model(user).Where("id = ?", user.ID).Update(); err != nil {
+		if err == pg.ErrNoRows {
+			return user, db.ErrNoMatch
+		}
+		return user, err
+	}
+	return user, nil
+}
+
 // DeleteUser deletes the user by id
 func (s *UserService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {

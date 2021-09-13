@@ -165,6 +165,15 @@ func TestUserService(t *testing.T) {
 			}
 		})
 	})
+	t.Run("reset deposit", func(t *testing.T) {
+		updatedUser, err := service.ResetDeposit(ctx, user.ID)
+		if err != nil {
+			t.Fatalf("reset deposit failed: %+v", err)
+		}
+		if updatedUser.Deposit != 0 {
+			t.Fatalf("expected new deposit to be: %d, got: %+v", 0, updatedUser.Deposit)
+		}
+	})
 	t.Run("update user", func(t *testing.T) {
 		t.Run("with basic attributes", func(t *testing.T) {
 			userToUpdate := &payloads.UpdateUserPayload{}
