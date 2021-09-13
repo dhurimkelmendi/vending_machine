@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit"
+	"github.com/dhurimkelmendi/vending_machine/config"
 	"github.com/dhurimkelmendi/vending_machine/fixtures"
 	"github.com/dhurimkelmendi/vending_machine/models"
 	"github.com/dhurimkelmendi/vending_machine/payloads"
@@ -137,7 +138,33 @@ func TestUserService(t *testing.T) {
 			t.Fatalf("could not retreive users: %+v", err)
 		}
 	})
-
+	t.Run("deposit money", func(t *testing.T) {
+		t.Run("deposit unacceptable amount", func(t *testing.T) {
+			userToUpdate := &payloads.DepositMoneyPayload{}
+			userToUpdate.ID = user.ID
+			newDepositAmount := int32(123)
+			userToUpdate.DepositAmount = newDepositAmount
+			_, err := service.DepositMoney(ctx, userToUpdate)
+			if err == nil {
+				t.Fatalf("expected deposit money to fail with unacceptable amount, deposit allowed: %d", newDepositAmount)
+			}
+		})
+		t.Run("deposit acceptable amount", func(t *testing.T) {
+			acceptableAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
+			newDepositAmount := acceptableAmountValues[rand.Intn(len(acceptableAmountValues))]
+			oldDepositAmount := user.Deposit
+			userToUpdate := &payloads.DepositMoneyPayload{}
+			userToUpdate.ID = user.ID
+			userToUpdate.DepositAmount = newDepositAmount
+			updatedUser, err := service.DepositMoney(ctx, userToUpdate)
+			if err != nil {
+				t.Fatalf("deposit money failed: %+v", err)
+			}
+			if updatedUser.Deposit != (oldDepositAmount + newDepositAmount) {
+				t.Fatalf("expected new deposit to be: %d, got: %+v", newDepositAmount, updatedUser.Deposit)
+			}
+		})
+	})
 	t.Run("update user", func(t *testing.T) {
 		t.Run("with basic attributes", func(t *testing.T) {
 			userToUpdate := &payloads.UpdateUserPayload{}
@@ -149,9 +176,8 @@ func TestUserService(t *testing.T) {
 				t.Fatalf("update user failed: %+v", err)
 			}
 			if updatedUser.Deposit != newDepositAmount {
-				t.Fatalf("expected deposit to be %d, got: %+v", newDepositAmount, updatedUser.Deposit)
+				t.Fatalf("expected deposit to be: %d, got: %+v", newDepositAmount, updatedUser.Deposit)
 			}
-			user = updatedUser
 		})
 		t.Run("with protected attributes", func(t *testing.T) {
 			userToUpdate := &payloads.UpdateUserPayload{}

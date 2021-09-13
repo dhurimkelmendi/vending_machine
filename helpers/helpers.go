@@ -26,6 +26,16 @@ func StringsContains(s []string, str string) bool {
 	return false
 }
 
+// Int32sCointains checks if a slice of type int32 contains a given int32
+func Int32sCointains(s []int32, str int32) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
 // StringsEquals checks if two string slices are equal
 func StringsEquals(a, b []string) bool {
 	if (a == nil) != (b == nil) {

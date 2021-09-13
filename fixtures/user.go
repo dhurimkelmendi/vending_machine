@@ -44,7 +44,7 @@ func (f *UserFixture) CreateBuyerUser(t *testing.T) *models.User {
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 	user.Password = gofakeit.Password(true, false, false, false, false, 10)
 	user.Role = models.UserRoleBuyer
-	user.Deposit = gofakeit.Int32()
+	user.Deposit = int32(gofakeit.Uint32())
 
 	ctx := context.Background()
 
@@ -65,7 +65,7 @@ func (f *UserFixture) CreateSellerUser(t *testing.T) *models.User {
 	user.Username = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 	user.Password = "password"
 	user.Role = models.UserRoleSeller
-	user.Deposit = gofakeit.Int32()
+	user.Deposit = int32(gofakeit.Uint32())
 
 	ctx := context.Background()
 

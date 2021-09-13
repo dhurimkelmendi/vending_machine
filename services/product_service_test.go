@@ -21,7 +21,10 @@ func TestProductService(t *testing.T) {
 	buyer := fixture.User.CreateBuyerUser(t)
 	seller := fixture.User.CreateSellerUser(t)
 	product := fixture.Product.CreateProduct(t, seller.ID)
-
+	sellerUserContext := auth.UserContext{
+		ID:   seller.ID,
+		Role: seller.Role,
+	}
 	ctx := context.Background()
 
 	t.Run("create product", func(t *testing.T) {
@@ -127,7 +130,7 @@ func TestProductService(t *testing.T) {
 			productToUpdate.ID = product.ID
 			newCost := int32(gofakeit.Uint32())
 			productToUpdate.Cost = newCost
-			updatedProduct, err := service.UpdateProduct(ctx, productToUpdate)
+			updatedProduct, err := service.UpdateProduct(ctx, productToUpdate, sellerUserContext)
 			if err != nil {
 				t.Fatalf("update product failed: %+v", err)
 			}
@@ -141,7 +144,7 @@ func TestProductService(t *testing.T) {
 			productToUpdate.ID = newID
 			newCost := int32(gofakeit.Uint32())
 			productToUpdate.Cost = newCost
-			updatedProduct, _ := service.UpdateProduct(ctx, productToUpdate)
+			updatedProduct, _ := service.UpdateProduct(ctx, productToUpdate, sellerUserContext)
 			if updatedProduct.ID == newID {
 				t.Fatal("expected id not to be updated, update was allowed")
 			}
@@ -150,21 +153,17 @@ func TestProductService(t *testing.T) {
 
 	t.Run("delete product", func(t *testing.T) {
 		t.Run("request by owner", func(t *testing.T) {
-			userContext := auth.UserContext{
-				ID:   seller.ID,
-				Role: seller.Role,
-			}
-			err := service.DeleteProduct(ctx, product.ID, userContext)
+			err := service.DeleteProduct(ctx, product.ID, sellerUserContext)
 			if err != nil {
 				t.Fatalf("delete product failed: %+v", err)
 			}
 		})
 		t.Run("request by buyer", func(t *testing.T) {
-			userContext := auth.UserContext{
+			buyerUserContext := auth.UserContext{
 				ID:   buyer.ID,
 				Role: buyer.Role,
 			}
-			err := service.DeleteProduct(ctx, product.ID, userContext)
+			err := service.DeleteProduct(ctx, product.ID, buyerUserContext)
 			if err == nil {
 				t.Fatalf("expected delete not to be allowed for non-owners, delete was allowed: %+v", err)
 			}

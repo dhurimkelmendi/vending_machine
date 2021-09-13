@@ -179,6 +179,35 @@ func (s *UserService) updateUser(dbSession *pg.Tx, updateUser *payloads.UpdateUs
 	return user, nil
 }
 
+// DepositMoney updates the user deposit by adding the specified amount
+func (s *UserService) DepositMoney(ctx context.Context, depositMoney *payloads.DepositMoneyPayload) (*models.User, error) {
+	var updatedUser *models.User
+	if err := depositMoney.Validate(); err != nil {
+		return &models.User{}, err
+	}
+	var err error
+	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
+		updatedUser, err = s.depositMoney(tx, depositMoney)
+		return err
+	})
+
+	return updatedUser, err
+}
+func (s *UserService) depositMoney(dbSession *pg.Tx, depositMoney *payloads.DepositMoneyPayload) (*models.User, error) {
+	user, err := s.GetUserByID(depositMoney.ID)
+	if err != nil {
+		return &models.User{}, db.ErrNoMatch
+	}
+	user.Deposit += depositMoney.DepositAmount
+	if _, err := dbSession.Model(user).Where("id = ?", user.ID).Update(); err != nil {
+		if err == pg.ErrNoRows {
+			return user, db.ErrNoMatch
+		}
+		return user, err
+	}
+	return user, nil
+}
+
 // DeleteUser deletes the user by id
 func (s *UserService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {

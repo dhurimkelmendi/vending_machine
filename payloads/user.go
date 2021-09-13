@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/dhurimkelmendi/vending_machine/config"
+	"github.com/dhurimkelmendi/vending_machine/helpers"
 	"github.com/dhurimkelmendi/vending_machine/models"
 	uuid "github.com/satori/go.uuid"
 )
@@ -128,5 +130,34 @@ func (u *UpdateUserPayload) Validate() error {
 
 // Render is used by go-chi/renderer
 func (u *UpdateUserPayload) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
+// DepositMoneyPayload is a struct that represents the payload that is expected when updating a user
+type DepositMoneyPayload struct {
+	ID            uuid.UUID `json:"id"`
+	DepositAmount int32     `json:"deposit_amount"`
+}
+
+// Validate ensures that all the required fields are present in an instance of DepositMoneyPayload*
+func (u *DepositMoneyPayload) Validate() error {
+	if u == nil {
+		return fmt.Errorf("request body cannot be null")
+	}
+	if u.ID == uuid.Nil {
+		return fmt.Errorf("id is a required field")
+	}
+	if u.DepositAmount == 0 {
+		return fmt.Errorf("deposit_amount is a required field")
+	}
+	acceptableDepositAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
+	if !helpers.Int32sCointains(acceptableDepositAmountValues, u.DepositAmount) {
+		return fmt.Errorf("deposit_amount can be one of: %v", acceptableDepositAmountValues)
+	}
+	return nil
+}
+
+// Render is used by go-chi/renderer
+func (u *DepositMoneyPayload) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }

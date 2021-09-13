@@ -72,6 +72,9 @@ type Config struct {
 
 	// RespondWithInnerError determines if API error response should include inner error messages.
 	RespondWithInnerError bool
+
+	// AcceptableDepositAmountValues specifies the amounts acceptable for deposit
+	AcceptableDepositAmountValues []int32
 }
 
 var defaultInstance *Config
@@ -130,6 +133,7 @@ func (c *Config) readConfigs() {
 	c.JWTSecret = appConfig.GetConfig("JWT_SECRET", "jwt_secret_signing_key")
 	c.APISecret = appConfig.GetConfig("API_SECRET", "app_secret_signing_key")
 	c.APIHost = appConfig.GetConfig("API_HOST", "http://localhost:8090")
+	c.AcceptableDepositAmountValues = []int32{5, 10, 20, 50, 100}
 
 	// Set flags
 	c.DebugDatabase = appConfig.GetFlag("DEBUG_DATABASE", false)
@@ -153,4 +157,5 @@ func (c *Config) LogConfigs() {
 	logrus.Warn(fmt.Sprintf("  * JWTSecret: %+v", c.JWTSecret))
 	logrus.Warn(fmt.Sprintf("  * APISecret: %+v", c.APISecret))
 	logrus.Warn(fmt.Sprintf("  * APIHost: %+v", c.APIHost))
+	logrus.Warn(fmt.Sprintf("  * AcceptableDepositAmountValues: %+v", c.AcceptableDepositAmountValues))
 }
