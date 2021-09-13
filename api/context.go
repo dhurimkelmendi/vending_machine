@@ -13,13 +13,22 @@ const (
 
 // User error contexts
 const (
-	CtxGetUsers       ErrorContext = "ctxGetUsers"
-	CtxGetUserAvatars ErrorContext = "ctxGetUserAvatars"
-	CtxGetUser        ErrorContext = "ctxGetUser"
-	CtxLoginUser      ErrorContext = "ctxLoginUser"
-	CtxCreateUser     ErrorContext = "ctxCreateUser"
-	CtxUpdateUser     ErrorContext = "ctxUpdateUser"
-	CtxDeleteUser     ErrorContext = "ctxDeleteUser"
+	CtxGetUsers   ErrorContext = "ctxGetUsers"
+	CtxGetUser    ErrorContext = "ctxGetUser"
+	CtxLoginUser  ErrorContext = "ctxLoginUser"
+	CtxCreateUser ErrorContext = "ctxCreateUser"
+	CtxUpdateUser ErrorContext = "ctxUpdateUser"
+	CtxDeleteUser ErrorContext = "ctxDeleteUser"
+)
+
+// Product error contexts
+const (
+	CtxGetProducts   ErrorContext = "ctxGetProducts"
+	CtxGetProduct    ErrorContext = "ctxGetProduct"
+	CtxLoginProduct  ErrorContext = "ctxLoginProduct"
+	CtxCreateProduct ErrorContext = "ctxCreateProduct"
+	CtxUpdateProduct ErrorContext = "ctxUpdateProduct"
+	CtxDeleteProduct ErrorContext = "ctxDeleteProduct"
 )
 
 // Serializer error contexts

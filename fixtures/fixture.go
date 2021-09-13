@@ -4,7 +4,8 @@ import "github.com/dhurimkelmendi/vending_machine/db"
 
 // Fixtures is a struct that contains references to all fixture instances.
 type Fixtures struct {
-	User *UserFixture
+	User    *UserFixture
+	Product *ProductFixture
 }
 
 var fixturesDefaultInstance *Fixtures
@@ -16,7 +17,8 @@ func GetFixturesDefaultInstance() *Fixtures {
 		_ = db.GetDefaultInstance()
 
 		fixturesDefaultInstance = &Fixtures{
-			User: GetUserFixtureDefaultInstance(),
+			User:    GetUserFixtureDefaultInstance(),
+			Product: GetProductFixtureDefaultInstance(),
 		}
 	}
 	return fixturesDefaultInstance

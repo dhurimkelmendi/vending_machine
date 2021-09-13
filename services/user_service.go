@@ -85,15 +85,15 @@ func (s *UserService) getUserByUsername(username string) (*models.User, error) {
 }
 
 // CreateUser creates a user using the provided payload
-func (s *UserService) CreateUser(ctx context.Context, registerUser *payloads.CreateUserPayload) (*models.User, error) {
+func (s *UserService) CreateUser(ctx context.Context, createUser *payloads.CreateUserPayload) (*models.User, error) {
 	user := &models.User{}
-	if err := registerUser.Validate(); err != nil {
+	if err := createUser.Validate(); err != nil {
 		return user, err
 	}
 
 	var err error
 	err = s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
-		user, err = s.createUser(tx, registerUser)
+		user, err = s.createUser(tx, createUser)
 		return err
 	})
 	if err != nil {
@@ -101,8 +101,8 @@ func (s *UserService) CreateUser(ctx context.Context, registerUser *payloads.Cre
 	}
 	return user, err
 }
-func (s *UserService) createUser(dbSession *pg.Tx, registerUser *payloads.CreateUserPayload) (*models.User, error) {
-	user := registerUser.ToUserModel()
+func (s *UserService) createUser(dbSession *pg.Tx, createUser *payloads.CreateUserPayload) (*models.User, error) {
+	user := createUser.ToUserModel()
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return &models.User{}, fmt.Errorf("error while hashing password")

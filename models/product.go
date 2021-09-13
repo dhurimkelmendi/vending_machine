@@ -18,7 +18,7 @@ type Product struct {
 
 // Merge merges two instances of type Product into one
 func (p *Product) Merge(secondProduct Product) {
-	if p.SellerID.String() == "" {
+	if p.SellerID == uuid.Nil {
 		p.SellerID = secondProduct.SellerID
 	}
 	if p.Name == "" {

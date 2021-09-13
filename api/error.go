@@ -54,4 +54,12 @@ var (
 	ErrCreateUser   = NewResponseError("errCreateUser", "unable to register user")
 	ErrUpdateUser   = NewResponseError("errUpdateUser", "unable to update user")
 	ErrDeleteUser   = NewResponseError("errDeleteUser", "unable to delete user")
+
+	// Product errors
+	ErrProductNotFound = NewResponseError("errProductNotFound", "unable to find user", http.StatusNotFound)
+	ErrGetProducts     = NewResponseError("errFindProduct", "unable to get users")
+	ErrGetProduct      = NewResponseError("errFindProduct", "unable to get user")
+	ErrCreateProduct   = NewResponseError("errCreateProduct", "unable to register user")
+	ErrUpdateProduct   = NewResponseError("errUpdateProduct", "unable to update user")
+	ErrDeleteProduct   = NewResponseError("errDeleteProduct", "unable to delete user")
 )
