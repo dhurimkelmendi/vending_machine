@@ -120,8 +120,8 @@ func Routes() http.Handler {
 		}
 
 		// users
-		r.Put("/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxUpdateUser, ctrl.Users.UpdateUser, allUserRolesOptions))
-		r.Delete("/user", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDeleteUser, ctrl.Users.DeleteUser, allUserRolesOptions))
+		r.Put("/users", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxUpdateUser, ctrl.Users.UpdateUser, allUserRolesOptions))
+		r.Delete("/users/{id}", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDeleteUser, ctrl.Users.DeleteUser, allUserRolesOptions))
 		r.Get("/users", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUsers, ctrl.Users.GetAllUsers, allUserRolesOptions))
 		r.Get("/users/{id}", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxGetUser, ctrl.Users.GetUserByID, allUserRolesOptions))
 		r.Post("/deposit", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxDepositMoney, ctrl.Users.DepositMoney, buyerOnlyOptions))
@@ -133,7 +133,7 @@ func Routes() http.Handler {
 		r.Get("/products/{id}", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxGetProduct, ctrl.Products.GetProductByID, allUserRolesOptions))
 		r.Post("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxCreateProduct, ctrl.Products.CreateProduct, sellerOnlyOptions))
 		r.Put("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxUpdateProduct, ctrl.Products.UpdateProduct, sellerOnlyOptions))
-		r.Delete("/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxDeleteProduct, ctrl.Products.DeleteProduct, sellerOnlyOptions))
+		r.Delete("/products/{id}", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxDeleteProduct, ctrl.Products.DeleteProduct, sellerOnlyOptions))
 	})
 	return r
 }

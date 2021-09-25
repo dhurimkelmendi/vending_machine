@@ -10,6 +10,7 @@ import (
 	"github.com/dhurimkelmendi/vending_machine/api"
 	"github.com/dhurimkelmendi/vending_machine/auth"
 	"github.com/dhurimkelmendi/vending_machine/db"
+	"github.com/dhurimkelmendi/vending_machine/models"
 	"github.com/dhurimkelmendi/vending_machine/payloads"
 	"github.com/dhurimkelmendi/vending_machine/services"
 	"github.com/go-chi/chi"
@@ -21,6 +22,7 @@ import (
 type ProductsController struct {
 	AuthenticatedController
 	productService *services.ProductService
+	userService    *services.UserService
 }
 
 var productsControllerDefaultInstance *ProductsController
@@ -28,14 +30,14 @@ var productsControllerDefaultInstance *ProductsController
 // GetProductsControllerDefaultInstance returns the default instance of ProductController.
 func GetProductsControllerDefaultInstance() *ProductsController {
 	if productsControllerDefaultInstance == nil {
-		productsControllerDefaultInstance = NewProductController(services.GetProductServiceDefaultInstance())
+		productsControllerDefaultInstance = NewProductController(services.GetProductServiceDefaultInstance(), services.GetUserServiceDefaultInstance())
 	}
 
 	return productsControllerDefaultInstance
 }
 
 // NewProductController create a new instance of a product controller using the supplied services
-func NewProductController(productService *services.ProductService) *ProductsController {
+func NewProductController(productService *services.ProductService, userService *services.UserService) *ProductsController {
 	controller := Controller{
 		errCmp:    api.NewErrorComponent(api.CmpController),
 		responder: api.GetResponderDefaultInstance(),
@@ -48,6 +50,7 @@ func NewProductController(productService *services.ProductService) *ProductsCont
 	return &ProductsController{
 		AuthenticatedController: authenticatedController,
 		productService:          productService,
+		userService:             userService,
 	}
 }
 
@@ -93,6 +96,11 @@ func (c *ProductsController) GetProductByID(w http.ResponseWriter, r *http.Reque
 // CreateProduct creates a new product and returns product details with an authentication token
 func (c *ProductsController) CreateProduct(w http.ResponseWriter, r *http.Request, userContext auth.UserContext) {
 	errCtx := c.errCmp(api.CtxCreateProduct, r.Header.Get("X-Request-Id"))
+	currentUser, err := c.userService.GetUserByID(userContext.ID)
+	if currentUser.Role != models.UserRoleSeller {
+		c.responder.Error(w, errCtx(api.ErrCreatePayload, errors.New("access denied for non-seller users")), http.StatusForbidden)
+		return
+	}
 	product := &payloads.CreateProductPayload{}
 	if err := json.NewDecoder(r.Body).Decode(product); err != nil {
 		c.responder.Error(w, errCtx(api.ErrCreatePayload, errors.New("cannot decode product")), http.StatusBadRequest)
@@ -104,7 +112,7 @@ func (c *ProductsController) CreateProduct(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	createdProduct, err := c.productService.CreateProduct(context.Background(), product)
+	createdProduct, err := c.productService.CreateProduct(context.Background(), product, userContext.ID)
 	if err != nil {
 		c.responder.Error(w, errCtx(api.ErrCreateProduct, err), http.StatusBadRequest)
 		return

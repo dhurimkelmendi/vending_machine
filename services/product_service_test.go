@@ -31,10 +31,9 @@ func TestProductService(t *testing.T) {
 		t.Run("create product with all fields", func(t *testing.T) {
 			productToCreate := &payloads.CreateProductPayload{}
 			productToCreate.Name = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
-			productToCreate.SellerID = seller.ID
 			productToCreate.Cost = int32(gofakeit.Uint32())
 			productToCreate.AmountAvailable = int32(gofakeit.Uint32())
-			createdProduct, err := service.CreateProduct(ctx, productToCreate)
+			createdProduct, err := service.CreateProduct(ctx, productToCreate, seller.ID)
 			if err != nil {
 				t.Fatalf("error while creating product %+v", err)
 			}
@@ -47,40 +46,27 @@ func TestProductService(t *testing.T) {
 		t.Run("with existing name", func(t *testing.T) {
 			productToCreate := &payloads.CreateProductPayload{}
 			productToCreate.Name = product.Name
-			productToCreate.SellerID = seller.ID
 			productToCreate.Cost = int32(gofakeit.Uint32())
 			productToCreate.AmountAvailable = int32(gofakeit.Uint32())
-			_, err := service.CreateProduct(ctx, productToCreate)
+			_, err := service.CreateProduct(ctx, productToCreate, seller.ID)
 			if err == nil {
 				t.Fatalf("expected duplicate product to fail %+v", err)
 			}
 		})
 		t.Run("without name", func(t *testing.T) {
 			productToCreate := &payloads.CreateProductPayload{}
-			productToCreate.SellerID = seller.ID
 			productToCreate.Cost = int32(gofakeit.Uint32())
 			productToCreate.AmountAvailable = int32(gofakeit.Uint32())
-			_, err := service.CreateProduct(ctx, productToCreate)
+			_, err := service.CreateProduct(ctx, productToCreate, seller.ID)
 			if err == nil {
 				t.Fatalf("expected create product to fail without name, update was allowed, %+v", err)
-			}
-		})
-		t.Run("without seller_id", func(t *testing.T) {
-			productToCreate := &payloads.CreateProductPayload{}
-			productToCreate.Name = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
-			productToCreate.Cost = int32(gofakeit.Uint32())
-			productToCreate.AmountAvailable = int32(gofakeit.Uint32())
-			_, err := service.CreateProduct(ctx, productToCreate)
-			if err == nil {
-				t.Fatalf("expected create product to fail without seller_id, update was allowed, %+v", err)
 			}
 		})
 		t.Run("without cost", func(t *testing.T) {
 			productToCreate := &payloads.CreateProductPayload{}
 			productToCreate.Name = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
-			productToCreate.SellerID = seller.ID
 			productToCreate.AmountAvailable = int32(gofakeit.Uint32())
-			_, err := service.CreateProduct(ctx, productToCreate)
+			_, err := service.CreateProduct(ctx, productToCreate, seller.ID)
 			if err == nil {
 				t.Fatalf("expected create product to fail without cost, update was allowed, %+v", err)
 			}
@@ -89,8 +75,7 @@ func TestProductService(t *testing.T) {
 			productToCreate := &payloads.CreateProductPayload{}
 			productToCreate.Name = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
 			productToCreate.Cost = int32(gofakeit.Uint32())
-			productToCreate.SellerID = seller.ID
-			_, err := service.CreateProduct(ctx, productToCreate)
+			_, err := service.CreateProduct(ctx, productToCreate, seller.ID)
 			if err == nil {
 				t.Fatalf("expected create product to fail without amount_available, update was allowed, %+v", err)
 			}

@@ -65,14 +65,14 @@ func (s *ProductService) getProductByID(productID uuid.UUID) (*models.Product, e
 }
 
 // CreateProduct creates a product using the provided payload
-func (s *ProductService) CreateProduct(ctx context.Context, createProduct *payloads.CreateProductPayload) (*models.Product, error) {
+func (s *ProductService) CreateProduct(ctx context.Context, createProduct *payloads.CreateProductPayload, sellerID uuid.UUID) (*models.Product, error) {
 	product := &models.Product{}
 	if err := createProduct.Validate(); err != nil {
 		return product, err
 	}
 	var err error
 	err = s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
-		product, err = s.createProduct(tx, createProduct)
+		product, err = s.createProduct(tx, createProduct, sellerID)
 		return err
 	})
 	if err != nil {
@@ -80,9 +80,9 @@ func (s *ProductService) CreateProduct(ctx context.Context, createProduct *paylo
 	}
 	return product, err
 }
-func (s *ProductService) createProduct(dbSession *pg.Tx, registerProduct *payloads.CreateProductPayload) (*models.Product, error) {
+func (s *ProductService) createProduct(dbSession *pg.Tx, registerProduct *payloads.CreateProductPayload, sellerID uuid.UUID) (*models.Product, error) {
 	product := registerProduct.ToProductModel()
-
+	product.SellerID = sellerID
 	product.ID = uuid.NewV4()
 	_, err := dbSession.Model(product).Insert()
 	if err != nil {

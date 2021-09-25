@@ -35,20 +35,38 @@ func TestProductController(t *testing.T) {
 	}
 
 	t.Run("create product", func(t *testing.T) {
-		r := chi.NewRouter()
-		r.Post("/api/v1/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxCreateProduct, ctrl.Products.CreateProduct, allUserOptions))
+		t.Run("as buyer", func(t *testing.T) {
+			r := chi.NewRouter()
+			r.Post("/api/v1/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxCreateProduct, ctrl.Products.CreateProduct, allUserOptions))
 
-		bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"name":"%s", "seller_id":"%s", "cost": %d, "amount_available": %d}`,
-			strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18], seller.ID.String(), gofakeit.Uint32(), gofakeit.Uint32())))
-		req := httptest.NewRequest(http.MethodPost, "/api/v1/products", bBuf)
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", seller.Token))
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"name":"%s", "seller_id":"%s", "cost": %d, "amount_available": %d}`,
+				strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18], seller.ID.String(), gofakeit.Uint32(), gofakeit.Uint32())))
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/products", bBuf)
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyer.Token))
 
-		res := httptest.NewRecorder()
-		r.ServeHTTP(res, req)
+			res := httptest.NewRecorder()
+			r.ServeHTTP(res, req)
 
-		if res.Code != http.StatusCreated {
-			t.Fatalf("expected http status code of 200 but got: %+v, %+v", res.Code, res.Body.String())
-		}
+			if res.Code != http.StatusForbidden {
+				t.Fatalf("expected http status code of 403 but got: %+v, %+v", res.Code, res.Body.String())
+			}
+		})
+		t.Run("as seller", func(t *testing.T) {
+			r := chi.NewRouter()
+			r.Post("/api/v1/products", ctrl.AuthenticationRequired(ctrl.Products.AuthenticatedController, api.CtxCreateProduct, ctrl.Products.CreateProduct, allUserOptions))
+
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"name":"%s", "seller_id":"%s", "cost": %d, "amount_available": %d}`,
+				strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18], seller.ID.String(), gofakeit.Uint32(), gofakeit.Uint32())))
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/products", bBuf)
+			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", seller.Token))
+
+			res := httptest.NewRecorder()
+			r.ServeHTTP(res, req)
+
+			if res.Code != http.StatusCreated {
+				t.Fatalf("expected http status code of 200 but got: %+v, %+v", res.Code, res.Body.String())
+			}
+		})
 	})
 
 	t.Run("get product", func(t *testing.T) {
@@ -217,7 +235,7 @@ func TestProductController(t *testing.T) {
 			URL := "/api/v1/buy"
 			r.Patch("/api/v1/buy", ctrl.AuthenticationRequired(ctrl.Users.AuthenticatedController, api.CtxBuyProduct, ctrl.Users.BuyProduct, buyerOnlyOptions))
 			productToBuy := fixture.Product.CreateProduct(t, seller.ID)
-			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"user_id": "%s", "product_id": "%s", "amount":%d}`, buyer.ID.String(), productToBuy.ID.String(), gofakeit.Uint16())))
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"user_id": "%s", "product_id": "%s", "amount":%d}`, buyer.ID.String(), productToBuy.ID.String(), 1)))
 			req := httptest.NewRequest(http.MethodPatch, URL, bBuf)
 			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyer.Token))
 

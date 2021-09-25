@@ -43,7 +43,6 @@ func GetProductFixtureDefaultInstance() *ProductFixture {
 func (f *ProductFixture) CreateProduct(t *testing.T, sellerID uuid.UUID) *models.Product {
 	product := &payloads.CreateProductPayload{}
 	product.Name = strings.Replace(uuid.NewV4().String(), "-", "_", -1)[0:18]
-	product.SellerID = sellerID
 	//make sure cost is divisible by 5
 	product.Cost = int32(rand.Intn(100)) * 5
 	product.AmountAvailable = int32(gofakeit.Uint32())
@@ -54,7 +53,7 @@ func (f *ProductFixture) CreateProduct(t *testing.T, sellerID uuid.UUID) *models
 		t.Log("CreateBuyerProduct: fixture.ProductService is nil!")
 	}
 
-	createdProduct, err := f.productService.CreateProduct(ctx, product)
+	createdProduct, err := f.productService.CreateProduct(ctx, product, sellerID)
 	if err != nil {
 		return nil
 	}

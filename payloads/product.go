@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/dhurimkelmendi/vending_machine/models"
-	uuid "github.com/satori/go.uuid"
 )
 
 // ProductList is a struct that contains a reference to a slice of type *models.Product
@@ -20,15 +19,16 @@ func (pl *ProductList) Render(w http.ResponseWriter, r *http.Request) error {
 
 // CreateProductPayload for registering a new product
 type CreateProductPayload struct {
-	tableName struct{} `pg:"products"`
-	models.Product
+	tableName       struct{} `pg:"products"`
+	Name            string   `json:"name"`
+	AmountAvailable int32    `json:"amount_available"`
+	Cost            int32    `json:"cost"`
 }
 
 // ToProductModel converts an instance of type *RegisterProductPayload to *models.Product type
 func (p *CreateProductPayload) ToProductModel() *models.Product {
 	return &models.Product{
 		Name:            p.Name,
-		SellerID:        p.SellerID,
 		AmountAvailable: p.AmountAvailable,
 		Cost:            p.Cost,
 	}
@@ -38,9 +38,6 @@ func (p *CreateProductPayload) ToProductModel() *models.Product {
 func (p *CreateProductPayload) Validate() error {
 	if p.Name == "" {
 		return fmt.Errorf("name is a required field")
-	}
-	if p.SellerID == uuid.Nil {
-		return fmt.Errorf("seller_id is a required field")
 	}
 	if p.AmountAvailable == 0 {
 		return fmt.Errorf("amount_available is a required field")
