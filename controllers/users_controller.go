@@ -187,12 +187,11 @@ func (c *UsersController) DepositMoney(w http.ResponseWriter, r *http.Request, u
 		c.responder.Error(w, errCtx(api.ErrInvalidRequestPayload, errors.New("cannot decode deposit payload")), http.StatusBadRequest)
 		return
 	}
-	depositMoney.ID = userContext.ID
 
 	ctx := context.Background()
 	defer r.Body.Close()
 
-	updatedUser, err := c.userService.DepositMoney(ctx, depositMoney)
+	updatedUser, err := c.userService.DepositMoney(ctx, depositMoney, userContext.ID)
 	if err != nil {
 		c.responder.Error(w, errCtx(api.ErrDepositMoney, err), http.StatusBadRequest)
 		return

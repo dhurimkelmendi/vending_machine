@@ -184,23 +184,26 @@ func (s *UserService) updateUser(dbSession *pg.Tx, updateUser *payloads.UpdateUs
 }
 
 // DepositMoney updates the user deposit by adding the specified amount
-func (s *UserService) DepositMoney(ctx context.Context, depositMoney *payloads.DepositMoneyPayload) (*models.User, error) {
+func (s *UserService) DepositMoney(ctx context.Context, depositMoney *payloads.DepositMoneyPayload, userID uuid.UUID) (*models.User, error) {
 	var updatedUser *models.User
 	if err := depositMoney.Validate(); err != nil {
 		return &models.User{}, err
 	}
 	var err error
 	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
-		updatedUser, err = s.depositMoney(tx, depositMoney)
+		updatedUser, err = s.depositMoney(tx, depositMoney, userID)
 		return err
 	})
 
 	return updatedUser, err
 }
-func (s *UserService) depositMoney(dbSession *pg.Tx, depositMoney *payloads.DepositMoneyPayload) (*models.User, error) {
-	user, err := s.GetUserByID(depositMoney.ID)
+func (s *UserService) depositMoney(dbSession *pg.Tx, depositMoney *payloads.DepositMoneyPayload, userID uuid.UUID) (*models.User, error) {
+	user, err := s.GetUserByID(userID)
 	if err != nil {
 		return &models.User{}, db.ErrNoMatch
+	}
+	if user.Role != models.UserRoleBuyer {
+		return &models.User{}, db.ErrUserForbidden
 	}
 	user.Deposit += depositMoney.DepositAmount
 	if _, err := dbSession.Model(user).Where("id = ?", user.ID).Update(); err != nil {

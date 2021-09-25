@@ -142,29 +142,38 @@ func TestUserService(t *testing.T) {
 		}
 	})
 	t.Run("deposit money", func(t *testing.T) {
-		t.Run("deposit unacceptable amount", func(t *testing.T) {
+		t.Run("as seller", func(t *testing.T) {
 			userToUpdate := &payloads.DepositMoneyPayload{}
-			userToUpdate.ID = seller.ID
-			newDepositAmount := int32(123)
+			newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
 			userToUpdate.DepositAmount = newDepositAmount
-			_, err := service.DepositMoney(ctx, userToUpdate)
+			_, err := service.DepositMoney(ctx, userToUpdate, seller.ID)
 			if err == nil {
-				t.Fatalf("expected deposit money to fail with unacceptable amount, deposit allowed: %d", newDepositAmount)
+				t.Fatalf("expected deposit money to fail with seller user, deposit allowed: %s", seller.ID.String())
 			}
 		})
-		t.Run("deposit acceptable amount", func(t *testing.T) {
-			newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
-			oldDepositAmount := seller.Deposit
-			userToUpdate := &payloads.DepositMoneyPayload{}
-			userToUpdate.ID = seller.ID
-			userToUpdate.DepositAmount = newDepositAmount
-			updatedUser, err := service.DepositMoney(ctx, userToUpdate)
-			if err != nil {
-				t.Fatalf("deposit money failed: %+v", err)
-			}
-			if updatedUser.Deposit != (oldDepositAmount + newDepositAmount) {
-				t.Fatalf("expected new deposit to be: %d, got: %+v", newDepositAmount, updatedUser.Deposit)
-			}
+		t.Run("as buyer", func(t *testing.T) {
+			t.Run("deposit unacceptable amount", func(t *testing.T) {
+				userToUpdate := &payloads.DepositMoneyPayload{}
+				newDepositAmount := int32(123)
+				userToUpdate.DepositAmount = newDepositAmount
+				_, err := service.DepositMoney(ctx, userToUpdate, buyer.ID)
+				if err == nil {
+					t.Fatalf("expected deposit money to fail with unacceptable amount, deposit allowed: %d", newDepositAmount)
+				}
+			})
+			t.Run("deposit acceptable amount", func(t *testing.T) {
+				newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
+				oldDepositAmount := buyer.Deposit
+				userToUpdate := &payloads.DepositMoneyPayload{}
+				userToUpdate.DepositAmount = newDepositAmount
+				updatedUser, err := service.DepositMoney(ctx, userToUpdate, buyer.ID)
+				if err != nil {
+					t.Fatalf("deposit money failed: %+v", err)
+				}
+				if updatedUser.Deposit != (oldDepositAmount + newDepositAmount) {
+					t.Fatalf("expected new deposit to be: %d, got: %+v", newDepositAmount, updatedUser.Deposit)
+				}
+			})
 		})
 	})
 	t.Run("reset deposit", func(t *testing.T) {

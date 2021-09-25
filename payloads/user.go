@@ -133,17 +133,13 @@ func (u *UpdateUserPayload) Render(w http.ResponseWriter, r *http.Request) error
 
 // DepositMoneyPayload is a struct that represents the payload that is expected when updating a user
 type DepositMoneyPayload struct {
-	ID            uuid.UUID `json:"id"`
-	DepositAmount int32     `json:"deposit_amount"`
+	DepositAmount int32 `json:"deposit_amount"`
 }
 
 // Validate ensures that all the required fields are present in an instance of DepositMoneyPayload*
 func (u *DepositMoneyPayload) Validate() error {
 	if u == nil {
 		return fmt.Errorf("request body cannot be null")
-	}
-	if u.ID == uuid.Nil {
-		return fmt.Errorf("id is a required field")
 	}
 	if u.DepositAmount == 0 {
 		return fmt.Errorf("deposit_amount is a required field")

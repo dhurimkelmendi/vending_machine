@@ -169,7 +169,7 @@ func TestUserController(t *testing.T) {
 		t.Run("as seller(without permission)", func(t *testing.T) {
 			acceptableDepositAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
 			newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
-			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit":%d}`, sellerUser.ID, newDepositAmount)))
+			bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"deposit":%d}`, newDepositAmount)))
 			req := httptest.NewRequest(http.MethodPost, URL, bBuf)
 			req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", sellerUser.Token))
 
@@ -184,7 +184,7 @@ func TestUserController(t *testing.T) {
 			t.Run("acceptable amount", func(t *testing.T) {
 				acceptableDepositAmountValues := config.GetDefaultInstance().AcceptableDepositAmountValues
 				newDepositAmount := acceptableDepositAmountValues[rand.Intn(len(acceptableDepositAmountValues))]
-				bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit_amount":%d}`, buyerUser.ID, newDepositAmount)))
+				bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"deposit_amount":%d}`, newDepositAmount)))
 				req := httptest.NewRequest(http.MethodPost, URL, bBuf)
 				req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
 				oldDepositAmount := buyerUser.Deposit
@@ -209,7 +209,7 @@ func TestUserController(t *testing.T) {
 			})
 			t.Run("unacceptable amount", func(t *testing.T) {
 				newDepositAmount := 222
-				bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"id":"%s","deposit_amount":%d}`, buyerUser.ID, newDepositAmount)))
+				bBuf := bytes.NewBuffer([]byte(fmt.Sprintf(`{"deposit_amount":%d}`, newDepositAmount)))
 				req := httptest.NewRequest(http.MethodPost, URL, bBuf)
 				req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", buyerUser.Token))
 
