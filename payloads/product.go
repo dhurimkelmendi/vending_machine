@@ -65,7 +65,6 @@ func (p *UpdateProductPayload) ToProductModel() *models.Product {
 	return &models.Product{
 		ID:              p.ID,
 		Name:            p.Name,
-		SellerID:        p.SellerID,
 		AmountAvailable: p.AmountAvailable,
 		Cost:            p.Cost,
 	}
