@@ -295,6 +295,10 @@ func (s *UserService) buyProduct(ctx context.Context, dbSession *pg.Tx, createUs
 		return userReport, db.ErrNoMatch
 	}
 
+	if product.AmountAvailable < createUserProduct.Amount {
+		return userReport, fmt.Errorf("insufficient product amount")
+	}
+
 	amountToBeSpent := product.Cost * createUserProduct.Amount
 	if user.Deposit < amountToBeSpent {
 		return userReport, fmt.Errorf("unable to buy product amount, deposit too low")
@@ -307,6 +311,13 @@ func (s *UserService) buyProduct(ctx context.Context, dbSession *pg.Tx, createUs
 		if err == pg.ErrNoRows {
 			return userReport, db.ErrNoMatch
 		}
+		return userReport, err
+	}
+	product.AmountAvailable -= createUserProduct.Amount
+	productForUpdate := &payloads.UpdateProductPayload{}
+	productForUpdate.AmountAvailable = product.AmountAvailable
+	productForUpdate.ID = product.ID
+	if _, err := s.productService.updateProduct(dbSession, productForUpdate); err != nil {
 		return userReport, err
 	}
 	userReport, err = s.userProductService.GetUserBuysReport(user.ID)
