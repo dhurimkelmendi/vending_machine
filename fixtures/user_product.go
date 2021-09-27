@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/brianvoe/gofakeit"
 	"github.com/dhurimkelmendi/vending_machine/db"
 	"github.com/dhurimkelmendi/vending_machine/payloads"
 	"github.com/dhurimkelmendi/vending_machine/services"
@@ -35,10 +34,9 @@ func GetUserProductFixtureDefaultInstance() *UserProductFixture {
 func (f *UserProductFixture) CreateUserProduct(t *testing.T, productID uuid.UUID, userID uuid.UUID) *payloads.UserProductPurchase {
 	userProduct := &payloads.UserProductPurchase{}
 	userProduct.ProductID = productID
-	userProduct.UserID = userID
-	userProduct.Amount = int32(gofakeit.Uint16())
+	userProduct.Amount = 2
 	ctx := context.Background()
-	_, err := f.userProductService.CreateUserProduct(ctx, userProduct)
+	_, err := f.userProductService.CreateUserProduct(ctx, userProduct, userID)
 	if err != nil {
 		return nil
 	}

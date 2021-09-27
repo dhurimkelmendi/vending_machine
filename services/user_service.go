@@ -270,21 +270,21 @@ func (s *UserService) deleteUser(dbSession *pg.Tx, userID uuid.UUID) error {
 }
 
 // BuyProduct links a product to the given user
-func (s *UserService) BuyProduct(ctx context.Context, createUserProduct *payloads.UserProductPurchase) (*payloads.UserBuysReport, error) {
+func (s *UserService) BuyProduct(ctx context.Context, createUserProduct *payloads.UserProductPurchase, userID uuid.UUID) (*payloads.UserBuysReport, error) {
 	var userReport *payloads.UserBuysReport
 
 	var err error
 	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
-		userReport, err = s.buyProduct(ctx, tx, createUserProduct)
+		userReport, err = s.buyProduct(ctx, tx, createUserProduct, userID)
 		return err
 	})
 
 	return userReport, err
 }
-func (s *UserService) buyProduct(ctx context.Context, dbSession *pg.Tx, createUserProduct *payloads.UserProductPurchase) (*payloads.UserBuysReport, error) {
+func (s *UserService) buyProduct(ctx context.Context, dbSession *pg.Tx, createUserProduct *payloads.UserProductPurchase, userID uuid.UUID) (*payloads.UserBuysReport, error) {
 	userReport := &payloads.UserBuysReport{}
 
-	user := &models.User{ID: createUserProduct.UserID}
+	user := &models.User{ID: userID}
 	user, err := s.GetUserByID(user.ID)
 	if err != nil {
 		return userReport, db.ErrNoMatch
@@ -299,7 +299,7 @@ func (s *UserService) buyProduct(ctx context.Context, dbSession *pg.Tx, createUs
 	if user.Deposit < amountToBeSpent {
 		return userReport, fmt.Errorf("unable to buy product amount, deposit too low")
 	}
-	if _, err = s.userProductService.CreateUserProduct(ctx, createUserProduct); err != nil {
+	if _, err = s.userProductService.CreateUserProduct(ctx, createUserProduct, userID); err != nil {
 		return userReport, err
 	}
 	user.Deposit -= amountToBeSpent

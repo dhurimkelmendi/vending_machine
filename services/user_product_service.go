@@ -87,7 +87,7 @@ func (s *UserProductService) getUserBuysReport(userID uuid.UUID) (*payloads.User
 		}
 	}
 	productAmounts := make(map[string]int32, len(userReport.Products))
-	userProducts, err := s.getAllUserProductsForUser(userID)
+	userProducts, err := s.GetAllUserProductsForUser(userID)
 	if err != nil {
 		return &payloads.UserBuysReport{}, err
 	}
@@ -106,7 +106,8 @@ func (s *UserProductService) getUserBuysReport(userID uuid.UUID) (*payloads.User
 	return userReport, nil
 }
 
-func (s *UserProductService) getAllUserProductsForUser(UserID uuid.UUID) ([]models.UsersProduct, error) {
+// GetAllUserProductsForUser returns all UserProducts for user
+func (s *UserProductService) GetAllUserProductsForUser(UserID uuid.UUID) ([]models.UsersProduct, error) {
 	UserProducts := make([]models.UsersProduct, 0)
 	err := s.db.Model(&UserProducts).Where("User_id = ?", UserID).Select()
 	if err != nil {
@@ -116,26 +117,26 @@ func (s *UserProductService) getAllUserProductsForUser(UserID uuid.UUID) ([]mode
 }
 
 // CreateUserProduct creates a userProduct using the provided payload
-func (s *UserProductService) CreateUserProduct(ctx context.Context, createUserProduct *payloads.UserProductPurchase) (*payloads.UserBuysReport, error) {
+func (s *UserProductService) CreateUserProduct(ctx context.Context, createUserProduct *payloads.UserProductPurchase, userID uuid.UUID) (*payloads.UserBuysReport, error) {
 	var err error
 	s.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
-		_, err = s.createUserProduct(tx, createUserProduct)
+		_, err = s.createUserProduct(tx, createUserProduct, userID)
 		return err
 	})
-	userReport := &payloads.UserBuysReport{UserID: createUserProduct.UserID}
+	userReport := &payloads.UserBuysReport{UserID: userID}
 
 	return userReport, err
 }
-func (s *UserProductService) createUserProduct(dbSession *pg.Tx, createUserProduct *payloads.UserProductPurchase) (*models.UsersProduct, error) {
+func (s *UserProductService) createUserProduct(dbSession *pg.Tx, createUserProduct *payloads.UserProductPurchase, userID uuid.UUID) (*models.UsersProduct, error) {
 	createdUserProduct := &models.UsersProduct{
-		UserID:    createUserProduct.UserID,
+		UserID:    userID,
 		ProductID: createUserProduct.ProductID,
 		Amount:    createUserProduct.Amount,
 	}
 	if err := createUserProduct.Validate(); err != nil {
 		return createdUserProduct, err
 	}
-	_, err := dbSession.Model(createdUserProduct).Insert()
+	_, err := dbSession.Model(createdUserProduct).OnConflict("(user_id, product_id) DO UPDATE").Insert()
 	if err != nil {
 		return createdUserProduct, err
 	}

@@ -17,7 +17,6 @@ func TestUserProductService(t *testing.T) {
 	seller := fixture.User.CreateSellerUser(t)
 	buyer := fixture.User.CreateBuyerUser(t)
 	product := fixture.Product.CreateProduct(t, seller.ID)
-	userProduct := fixture.UserProduct.CreateUserProduct(t, product.ID, buyer.ID)
 	ctx := context.Background()
 	t.Run("change representation", func(t *testing.T) {
 		t.Run("one of each coin", func(t *testing.T) {
@@ -51,36 +50,24 @@ func TestUserProductService(t *testing.T) {
 		t.Run("with all fields", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
-			userProductToCreate.UserID = seller.ID
 			userProductToCreate.Amount = int32(gofakeit.Uint16())
-			_, err := service.CreateUserProduct(ctx, userProductToCreate)
+			_, err := service.CreateUserProduct(ctx, userProductToCreate, buyer.ID)
 			if err != nil {
 				t.Fatalf("error while creating userProduct %+v", err)
 			}
 		})
 		t.Run("without product_id", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
-			userProductToCreate.UserID = seller.ID
 			userProductToCreate.Amount = int32(gofakeit.Uint16())
-			_, err := service.CreateUserProduct(ctx, userProductToCreate)
+			_, err := service.CreateUserProduct(ctx, userProductToCreate, buyer.ID)
 			if err == nil {
 				t.Fatal("expected create to fail without product_id, create was allowed")
-			}
-		})
-		t.Run("without user_id", func(t *testing.T) {
-			userProductToCreate := &payloads.UserProductPurchase{}
-			userProductToCreate.ProductID = product.ID
-			userProductToCreate.Amount = int32(gofakeit.Uint16())
-			_, err := service.CreateUserProduct(ctx, userProductToCreate)
-			if err == nil {
-				t.Fatal("expected create to fail without user_id, create was allowed")
 			}
 		})
 		t.Run("without amount", func(t *testing.T) {
 			userProductToCreate := &payloads.UserProductPurchase{}
 			userProductToCreate.ProductID = product.ID
-			userProductToCreate.UserID = seller.ID
-			_, err := service.CreateUserProduct(ctx, userProductToCreate)
+			_, err := service.CreateUserProduct(ctx, userProductToCreate, buyer.ID)
 			if err == nil {
 				t.Fatal("expected create to fail without amount, create was allowed")
 			}
@@ -95,7 +82,19 @@ func TestUserProductService(t *testing.T) {
 		if userReport.UserID != buyer.ID {
 			t.Fatalf("user report generated for wrong user, expected: %s, got %s", buyer.ID, userReport.UserID)
 		}
-		totalSpendExpected := product.Cost * userProduct.Amount
+		userProducts, err := service.GetAllUserProductsForUser(buyer.ID)
+		if err != nil {
+			t.Fatalf("error while getting user_products: %+v", err)
+		}
+
+		var productSpend int32
+		productSpend = 0
+		for _, userProduct := range userProducts {
+			if userProduct.ProductID == userProduct.ProductID {
+				productSpend = userProduct.Amount
+			}
+		}
+		totalSpendExpected := product.Cost * productSpend
 		if userReport.AmountSpent != totalSpendExpected {
 			t.Fatalf("user report generated wrong amount_spent, expected: %d, got %d", totalSpendExpected, userReport.AmountSpent)
 		}

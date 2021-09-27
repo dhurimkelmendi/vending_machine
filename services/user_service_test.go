@@ -188,22 +188,20 @@ func TestUserService(t *testing.T) {
 	t.Run("buy product", func(t *testing.T) {
 		t.Run("with sufficient deposit", func(t *testing.T) {
 			productPurchase := &payloads.UserProductPurchase{
-				UserID:    buyer.ID,
 				ProductID: product.ID,
 				Amount:    2,
 			}
-			_, err := service.BuyProduct(ctx, productPurchase)
+			_, err := service.BuyProduct(ctx, productPurchase, buyer.ID)
 			if err != nil {
 				t.Fatalf("product purchase failed: %+v", err)
 			}
 		})
 		t.Run("with insufficient deposit", func(t *testing.T) {
 			productPurchase := &payloads.UserProductPurchase{
-				UserID:    buyer.ID,
 				ProductID: product.ID,
 				Amount:    int32(rand.Intn(999999999)),
 			}
-			_, err := service.BuyProduct(ctx, productPurchase)
+			_, err := service.BuyProduct(ctx, productPurchase, buyer.ID)
 			if err == nil {
 				t.Fatal("expected product purchase to fail due to insufficient deposit, purchase was allowed")
 			}

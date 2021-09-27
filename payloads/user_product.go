@@ -58,7 +58,6 @@ func (p *UserBuysReport) Render(w http.ResponseWriter, r *http.Request) error {
 // UserProductPurchase is a struct that represents the payload for linking a single product to a user
 type UserProductPurchase struct {
 	ProductID uuid.UUID `json:"product_id"`
-	UserID    uuid.UUID `json:"user_id"`
 	Amount    int32     `json:"amount"`
 }
 
@@ -69,9 +68,6 @@ func (p *UserProductPurchase) Validate() error {
 	}
 	if p.ProductID == uuid.Nil {
 		return fmt.Errorf("product_id cannot be null")
-	}
-	if p.UserID == uuid.Nil {
-		return fmt.Errorf("user_id cannot be null")
 	}
 	if p.Amount == 0 {
 		return fmt.Errorf("amount cannot be null")

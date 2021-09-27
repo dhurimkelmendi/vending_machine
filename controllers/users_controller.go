@@ -260,7 +260,7 @@ func (c *UsersController) BuyProduct(w http.ResponseWriter, r *http.Request, use
 	ctx := context.Background()
 	defer r.Body.Close()
 
-	userReport, err := c.userService.BuyProduct(ctx, userProduct)
+	userReport, err := c.userService.BuyProduct(ctx, userProduct, userContext.ID)
 	if err != nil {
 		c.responder.Error(w, errCtx(api.ErrBuyProduct, err), http.StatusBadRequest)
 		return

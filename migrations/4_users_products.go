@@ -13,7 +13,8 @@ func init() {
 			id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
 			user_id uuid REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
 			product_id uuid REFERENCES products(id) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-			amount int NOT NULL
+			amount int NOT NULL,
+			UNIQUE(user_id, product_id)
 		);`)
 		return err
 	}, func(db migrations.DB) error {
