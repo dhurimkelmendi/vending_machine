@@ -1,0 +1,30 @@
+version: '3'
+services:
+  vending_machine-postgres-server:
+    image: 'postgres:latest'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: vending_machine_db
+      POSTGRES_USER: vending_machine
+      POSTGRES_PASSWORD: 'vending_machine_pass'
+  vending_machine-api-server:
+    build: .
+    ports:
+      - '8080:8080'
+    volumes:
+      - '.:/go/src/github.com/dhurimkelmendi/vending_machine'
+    environment:
+      API_ORIGIN: 'http://localhost:8080'
+      ENV: development
+      DB_HOST: vending_machine-postgres-server
+      DB_PORT: 5432
+      DB_NAME: vending_machine_db
+      DB_USERNAME: vending_machine
+      DB_PASSWORD: 'vending_machine_pass'
+      # When set to any value other than 'true', the container will pack/build a binary and then run
+      # that binary. When set to 'true', the container will run from source directly.
+      RUN_FROM_SOURCE: 'false'
+      # When set to any value other than 'true', the container will NOT run database migration reset
+      # commands. When set to 'true', the container will reset and rerun database migrations.
+      RESET_DB: "${RESET_DB}"

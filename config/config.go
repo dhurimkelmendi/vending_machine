@@ -30,7 +30,7 @@ type Config struct {
 	// APIOrigin is the publicly reachable origin of the API server.
 	// It must include protocol, host and port (except 80 and 443).
 	// It must not have trailing slash.
-	// For example "https://tests.api.com:8888"
+	// For example "https://tests.api.com:8080"
 	APIOrigin string
 
 	// AllowAllCORSOrigins determines if all cross origin requests from all origins should be allowed or not.
@@ -124,15 +124,15 @@ func (c *Config) readConfigs() {
 
 	c.APIOrigin = appConfig.GetConfig("API_ORIGIN", "")
 	c.CORSOrigins = appConfig.GetConfig("CORS_ORIGINS", "")
-	c.DatabaseHost = appConfig.GetConfig("DB_ADDR", "localhost")
+	c.DatabaseHost = appConfig.GetConfig("DB_HOST", "localhost")
 	c.DatabasePort = appConfig.GetConfig("DB_PORT", "5432")
 	c.DatabaseName = appConfig.GetConfig("DB_NAME", "vending_machine_db")
-	c.DatabaseUsername = appConfig.GetConfig("DB_USERNAME", "vending_machine_backend")
-	c.DatabasePassword = appConfig.GetConfig("DB_PASSWORD", "vending_machine_password")
+	c.DatabaseUsername = appConfig.GetConfig("DB_USERNAME", "vending_machine")
+	c.DatabasePassword = appConfig.GetConfig("DB_PASSWORD", "vending_machine_pass")
 	c.HTTPAddr = appConfig.GetConfig("HTTP_ADDR", ":8080")
 	c.JWTSecret = appConfig.GetConfig("JWT_SECRET", "jwt_secret_signing_key")
 	c.APISecret = appConfig.GetConfig("API_SECRET", "app_secret_signing_key")
-	c.APIHost = appConfig.GetConfig("API_HOST", "http://localhost:8090")
+	c.APIHost = appConfig.GetConfig("API_HOST", "http://localhost:8080")
 	c.AcceptableDepositAmountValues = []int32{5, 10, 20, 50, 100}
 
 	// Set flags
